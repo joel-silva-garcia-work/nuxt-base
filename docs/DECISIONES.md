@@ -80,4 +80,4 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - `.env.example` contiene solo `APP_PORT`; los secretos `.env*` quedan fuera del contexto Docker, salvo la plantilla sin secretos. Compose inicia la app sin PostgreSQL, que se añade en F1.2.
 - El job Docker de CI construye la imagen de producción, valida Compose, arranca el servicio de desarrollo y comprueba la respuesta HTTP. Las pruebas unitarias se activarán cuando se incorporen archivos de test; no se reportan suites inexistentes como ejecutadas.
 - Documentación mínima de ejecución con Compose en `README.md`; la guía de entrega completa sigue en F8.1.
-- Verificación de Docker build/arranque y comandos en contenedor: pendiente de ejecutar y registrar en `ESTADO.md`.
+- Verificación remota de Docker build/arranque: CI run 42400395114, SUCCESS; Dockerfile de producción construido, Compose validado, servicio de desarrollo healthy y smoke test HTTP aprobado. El build Docker local no concluyó por baja velocidad de descarga, queda registrado como intento no exitoso y no afecta la verificación remota reproducible.

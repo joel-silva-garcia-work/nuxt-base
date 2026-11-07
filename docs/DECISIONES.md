@@ -72,3 +72,12 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - `npm ci` reportó inicialmente 26 vulnerabilidades: 2 bajas y 24 moderadas. Se actualizaron Nuxt a `4.6.4` y ESLint a `10.14.0`, versiones compatibles con Node 22.23.4, y se fijaron overrides para `glob@14.0.2` y `minimatch@11.0.1`. Los checks lint, typecheck Nuxt y build pasan.
 - La auditoría final reporta 7 bajas, 0 moderadas/altas/críticas. Los advisories remanentes de Nuxt ofrecen solo Nuxt `4.1.3` como fix, que es anterior a `4.6.2`, versión que corrige advisories previos de route rules y `useHeadSafe`; no se acepta esa degradación. `deepmerge@4.3.1` sigue afectado por GHSA-gcqx-w48m-w2h4 y es la última versión publicada en npm; no hay versión corregida disponible.
 - No se ejecutó `npm audit fix --force` ni se ocultaron findings. Revalidar los avisos remanentes cuando Nuxt o deepmerge publiquen una solución compatible.
+
+## F1.1 — Scaffold y contenedores — 2026-11-07
+
+- Se conserva Node `22.23.4` de `.nvmrc` y `package-lock.json`; `typecheck` ejecuta Nuxt en esta subfase. F1.2 ampliará el chequeo de scripts cuando incorpore su configuración TypeScript.
+- `Dockerfile` usa etapas development/build/runtime sobre Node slim fijado a `22.23.4`. Compose monta el workspace para desarrollo y usa volúmenes separados para `node_modules` y `.nuxt`; el runtime de producción ejecuta solo `.output` con usuario no root y healthcheck HTTP.
+- `.env.example` contiene solo `APP_PORT`; los secretos `.env*` quedan fuera del contexto Docker, salvo la plantilla sin secretos. Compose inicia la app sin PostgreSQL, que se añade en F1.2.
+- El job Docker de CI construye la imagen de producción, valida Compose, arranca el servicio de desarrollo y comprueba la respuesta HTTP. Las pruebas unitarias se activarán cuando se incorporen archivos de test; no se reportan suites inexistentes como ejecutadas.
+- Documentación mínima de ejecución con Compose en `README.md`; la guía de entrega completa sigue en F8.1.
+- Verificación remota de Docker build/arranque: CI run 42400395114, SUCCESS; Dockerfile de producción construido, Compose validado, servicio de desarrollo healthy y smoke test HTTP aprobado. El build Docker local no concluyó por baja velocidad de descarga, queda registrado como intento no exitoso y no afecta la verificación remota reproducible.

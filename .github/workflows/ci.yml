@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - "**"
-  pull_request:
-    branches:
-      - dev
   workflow_dispatch:
 
 permissions:
@@ -97,29 +94,23 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v5
 
-      - name: Build application image
-        run: |
-          if [ -f Dockerfile ]; then
-            docker build --tag nuxt-base:ci .
-          else
-            echo "::notice::Dockerfile is not present yet; image validation is deferred to F1.1."
-          fi
+      - name: Build production image
+        run: docker build --tag nuxt-base:ci .
 
       - name: Validate Compose configuration
-        run: |
-          compose_file=
-          for candidate in compose.yaml compose.yml docker-compose.yaml docker-compose.yml; do
-            if [ -f "$candidate" ]; then
-              compose_file=$candidate
-              break
-            fi
-          done
+        run: docker compose --env-file .env.example config --quiet
 
-          if [ -z "$compose_file" ]; then
-            echo "::notice::Compose configuration is not present yet; validation is deferred to F1.1."
-          elif [ ! -f .env.example ]; then
-            echo "::error::Compose validation requires the documented .env.example file."
-            exit 1
-          else
-            docker compose --env-file .env.example -f "$compose_file" config --quiet
-          fi
+      - name: Start Compose app and wait for health
+        run: docker compose --env-file .env.example up --build --detach --wait --wait-timeout 180
+
+      - name: Smoke test app in container
+        run: >-
+          docker compose --env-file .env.example exec --no-TTY app
+          node -e "fetch('http://127.0.0.1:3000').then(async (response) => {
+          const body = await response.text();
+          if (!response.ok || !body.includes('Nuxt Base')) throw new Error('Unexpected app response');
+          }).catch((error) => { console.error(error); process.exit(1); })"
+
+      - name: Stop Compose app
+        if: always()
+        run: docker compose --env-file .env.example down --volumes

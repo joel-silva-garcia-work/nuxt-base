@@ -117,6 +117,11 @@ Verificador futuro (F3.1): comparar en ambas direcciones rutas descubiertas y ca
 - `UnitOfWork`/contexto abre una transacción y proporciona el manager a cada repositorio participante. Todo cambio relacionado, incluidas relaciones y audit trail, usa el mismo manager.
 - El último administrador activo y las escrituras RBAC concurrentes requieren transacción/lock e invariantes probadas en subfases funcionales.
 - Tests de integración apuntan a base de prueba dedicada, con guardas de entorno; no usar SQLite ni mocks para simular PostgreSQL.
+- Las entidades TypeORM son privadas de su módulo; `server/composition/persistence.ts` es el único registro y enlaza users, roles, permissions, auth (sesiones y rate limit) y audit. Las dos relaciones muchos-a-muchos aportan las tablas `user_roles` y `role_permissions`.
+- La raíz de composición mantiene un DataSource por proceso y rechaza cambiar de destino una vez elegido. El pool tiene un máximo configurado; Nitro registra el cierre del DataSource, que se inicializa al usar persistencia y se reutiliza por solicitud.
+- Los repositorios reciben un `Tx` opaco. La infraestructura asocia el token al `EntityManager` de la transacción y lo invalida al terminar el callback; no se permite consultar el manager global para operaciones de repositorio.
+- `UserRecord` nunca contiene `passwordHash`; la entidad lo excluye de las consultas predeterminadas. El hash de sesión también se excluye por defecto y permanece en el adaptador de auth.
+- Registrar metadata no crea tablas: `synchronize` y `migrationsRun` permanecen desactivados. La creación y reversión del esquema se entrega en F2.2.
 
 ## 9. Pruebas y verificaciones F0.2
 

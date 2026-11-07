@@ -1,6 +1,6 @@
 import { Client } from 'pg'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { loadDatabaseConfigs } from '../../server/platform/config/database'
+import { loadDatabaseConfigs } from '../../server/platform/config/database.ts'
 
 const { test } = loadDatabaseConfigs()
 const client = new Client({

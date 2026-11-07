@@ -5,11 +5,11 @@ Esta plantilla NO representa una inspección del proyecto. Conservar y reconcili
 - Subfase inicial si proyecto nuevo: F0.1.
 - Última verificada histórica: F2.3; fases F1 y F2 figuran CERRADAS (2026-10-29). Ese historial no está en el workspace adoptado.
 - Rama/commit/merge históricos declarados: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. No se recrearon esas ramas o commits.
-- Próxima acción vigente: completar F0.2 local con remoto autorizado, protección/checks de `dev` y PR obligatorio; no iniciar F1.1 ni reanudar F3.1 hasta reconciliar el historial.
+- Próxima acción vigente: completar F0.2 local abriendo el PR obligatorio y confirmando CI/protección de `dev`; no iniciar F1.1 ni reanudar F3.1 hasta reconciliar el historial.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
-- Reconciliación de workspace (2026-11-07): el usuario autorizó iniciar un repositorio local en este directorio. Se creó baseline `dev` (`d7727b0`) y rama `change/f0.2-api-contracts`; son una nueva línea local de adopción, no reconstruyen ni autentican el historial F2.3 anterior. No hay remoto configurado. F0.2 solo podrá cerrarse cuando exista remoto autorizado, se configure protección/checks de `dev` y se complete el PR obligatorio; hasta entonces esta reejecución está BLOQUEADA.
+- Reconciliación de workspace (2026-11-07): el usuario autorizó iniciar un repositorio local en este directorio. Se creó baseline `dev` (`d7727b0`) y rama `change/f0.2-api-contracts`; son una nueva línea local de adopción, no reconstruyen ni autentican el historial F2.3 anterior. F0.2 solo podrá cerrarse cuando se complete el PR obligatorio y se confirme CI/protección de `dev`; hasta entonces esta reejecución está BLOQUEADA.
 
 ## Avance
 | ID | Objetivo | Estado |
@@ -95,11 +95,13 @@ Esta plantilla NO representa una inspección del proyecto. Conservar y reconcili
 - Estado: BLOQUEADA para cierre integrado; se conserva aparte la evidencia VERIFICADA histórica del 2026-10-29.
 - Base: usuario autorizó bootstrap local tras confirmar ausencia de `.git`; F0.1 histórica VERIFICADA. Las referencias a F2.3 no están en este checkout y no se simuló su historial.
 - Entregas: `.gitignore`; `docs/API.md` (capas, ownership de 10 módulos, grafo, contratos de casos de uso/UoW, catálogo de 22 claves, Vue/SSR, persistencia, audit trails y pruebas); sección F0.2 en `docs/DECISIONES.md`.
-- Git: baseline nuevo en `dev`, `d7727b0` (`chore(F0.2): adopt current workspace baseline`); rama activa `change/f0.2-api-contracts`, commit F0.2 `1f8e11e` (`docs(F0.2): define modular API and module boundaries`). No se creó remoto ni se publicaron ramas. Falta PR/checks y protección efectiva de `dev`.
+- Git: baseline nuevo en `dev`, `d7727b0` (`chore(F0.2): adopt current workspace baseline`); rama activa `change/f0.2-api-contracts`, commits F0.2 `1f8e11e` (`docs(F0.2): define modular API and module boundaries`) y `c4aa92f` (registro de verificación).
+- Acceso remoto (2026-11-07): `origin` HTTPS es `https://github.com/joel-silva-garcia-work/nuxt-base.git`; helper de Git configurado globalmente `osxkeychain`. El usuario seleccionó conservar HTTPS. `git ls-remote` confirmó `origin/change/f0.2-api-contracts` en `c4aa92f`; `git push --dry-run` a rama existente y a una referencia nueva terminó OK sin publicar cambios. No se leyeron ni solicitaron credenciales. GitHub CLI no está instalado.
+- Pendiente F0.2: no hay PR abierto para esta rama; falta crear/validar PR, confirmar CI/checks y protección de `dev`. No se hizo push adicional ni se modificó la URL remota.
 - Compatibilidad consultada: `node --version` v22.23.4; `npm --version` 10.9.9; `git --version` 2.49.0. Registro npm: Nuxt 4.5.2, Vue 3.5.44, TypeORM 1.1.2 y pg 8.23.1 aceptan la versión Node declarada por el proyecto.
 - Verificación documental: grafo de 10 módulos acíclico; catálogo 22/22 entradas únicas (21 operaciones del PLAN y GET CSRF auxiliar), políticas correctas. Comprobación por script Node temporal en sesión; no se añadió herramienta permanente.
 - No ejecutado: lint/build/typecheck/unitarias/integración/E2E, ni Docker/Compose o conexión a PostgreSQL; no hay `node_modules` y F0.2 solo produce diseño. No se afirman esos resultados.
-- Puerta arquitectónica: unidad documental; Vue/backend no implementados. Contratos y fronteras documentados; revisión manual, con catálogo/grafo verificados por script. Próxima acción: configurar un remoto autorizado y PR/checks para completar F0.2; no avanzar a F1.1.
+- Puerta arquitectónica: unidad documental; Vue/backend no implementados. Contratos y fronteras documentados; revisión manual, con catálogo/grafo verificados por script. Próxima acción: abrir el PR de la rama y confirmar checks/protección de `dev` para completar F0.2; no avanzar a F1.1.
 
 ## Evidencias F1.1
 - ID / fecha real / estado: F1.1 / 2026-10-29 / VERIFICADA.

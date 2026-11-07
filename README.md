@@ -23,7 +23,7 @@ docker compose exec app npm run db:check
 
 Las cuentas de desarrollo y pruebas son distintas y no son superusuarios. El script rechaza nombres inválidos, una cuenta administrativa insuficiente, bases de desarrollo/pruebas iguales, roles existentes con privilegios elevados y bases existentes con dueño distinto; no elimina datos ni cambia propietarios existentes.
 
-Para cambiar los puertos publicados, edita `APP_PORT` y `POSTGRES_HOST_PORT` en `.env`. El acceso remoto PostgreSQL requiere `DB_SSL=require` y validación de certificados. Detén los servicios con `docker compose down`; para borrar los datos persistidos del contenedor se requiere además `--volumes`.
+El puerto PostgreSQL se publica solo en loopback (`127.0.0.1`) por defecto. Edita `APP_PORT` y `POSTGRES_HOST_PORT` en `.env` para cambiar los puertos. Cambiar `POSTGRES_HOST_BIND_ADDRESS` puede exponer PostgreSQL a otras interfaces: hazlo solo si necesitas acceso remoto y configúralo con controles de red adecuados. El acceso remoto también requiere `DB_SSL=require` y validación de certificados. Detén los servicios con `docker compose down`; para borrar los datos persistidos del contenedor se requiere además `--volumes`.
 
 Los checks de calidad se pueden ejecutar en el servicio de desarrollo:
 

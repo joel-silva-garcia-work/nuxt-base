@@ -125,6 +125,11 @@ jobs:
       - name: Validate Compose configuration
         run: docker compose --env-file .env.example config --quiet
 
+      - name: Ensure PostgreSQL port is loopback-only by default
+        run: |
+          docker compose --env-file .env.example config --format json |
+            python3 -c 'import json, sys; ports = json.load(sys.stdin)["services"]["postgres"]["ports"]; assert any(port["target"] == 5432 and port["host_ip"] == "127.0.0.1" for port in ports)'
+
       - name: Start Compose app and wait for health
         run: docker compose --env-file .env.example up --build --detach --wait --wait-timeout 180
 

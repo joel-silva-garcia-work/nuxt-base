@@ -5,7 +5,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Subfase inicial si proyecto nuevo: F0.1.
 - Última verificada histórica: F2.3; fases F1 y F2 figuran CERRADAS (2026-10-29). Ese historial no está en el workspace adoptado.
 - Rama/commit/merge históricos declarados: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. No se recrearon esas ramas o commits.
-- Estado vigente (2026-11-07): F0.2 quedó integrada en `dev` mediante merge `--no-ff` `80d314e`; los checks locales y CI remoto en el merge pasan y `dev` está protegida. F1.1 está EN_CURSO en `change/f1.1-scaffold-containers`. El historial F2.3 de otro workspace no se recrea ni se usa como evidencia de esta línea local.
+- Estado vigente (2026-11-07): F0.2 quedó integrada en `dev` mediante merge `--no-ff` `80d314e`; los checks locales y CI remoto en el merge pasan y `dev` está protegida. F1.1 está verificada en `change/f1.1-scaffold-containers`; F1.2 está verificada en `change/f1.2-postgres-containers`, commit `f431906`, con los tres jobs de CI aprobados en run `42408841230`. La rama F1.2 permanece sin merge para integrarse en F1.3. La evidencia histórica F1.2 de otro workspace se conserva, pero no se usa como verificación de esta línea local.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
@@ -17,8 +17,8 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 | F0.1 | Entorno y versiones | VERIFICADA |
 | F0.2 | Diseño modular y contratos | VERIFICADA (histórico 2026-10-29 y adopción local 2026-11-07) |
 | F1.1 | Scaffold y contenedores | VERIFICADA (histórico 2026-10-29 y adopción local 2026-11-07) |
-| F1.2 | PostgreSQL nativo | VERIFICADA |
-| F1.3 | Integración y cierre | VERIFICADA |
+| F1.2 | PostgreSQL en contenedor | VERIFICADA en la línea local (f431906; CI 42408841230) |
+| F1.3 | Integración y cierre | PENDIENTE en la línea local |
 | F2.1 | Módulos y persistencia | VERIFICADA |
 | F2.2 | Migraciones y arnés DB | VERIFICADA |
 | F2.3 | Integración y cierre | VERIFICADA |

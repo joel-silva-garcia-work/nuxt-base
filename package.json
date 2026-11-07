@@ -10,7 +10,7 @@
     "build": "nuxt build",
     "preview": "nuxt preview",
     "lint": "eslint .",
-    "typecheck": "nuxt typecheck",
+    "typecheck": "nuxt typecheck && tsc -p scripts/tsconfig.json",
     "test:unit": "vitest run --project unit",
     "test:integration": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --project integration",
     "db:check": "node --env-file-if-exists=.env scripts/db-check.ts",

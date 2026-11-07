@@ -66,3 +66,9 @@ Se mantiene el PR como vía preferida. Para la integración local de F0.2, no ha
 - Se conservan versiones fijadas; no se modifican dependencias. Comandos ejecutados ahora: `node --version` → v22.23.4; `npm --version` → 10.9.9; `git --version` → 2.49.0; `npm view nuxt@4.5.2 engines --json`, Vue 3.5.44, TypeORM 1.1.2 y pg 8.23.1. Node satisface el rango del proyecto y los `engines` publicados consultados.
 - No se ejecutaron instalación, build, base de datos ni contenedores: F0.2 produce contratos, no runtime. Docker/Compose sigue requerido por los documentos vigentes, según decisión confirmada para esta ejecución.
 - Fuentes oficiales: Nuxt server routes, auto-imports y composables; TypeORM transactions; PostgreSQL transactions; Vue state management (enlaces en `docs/API.md`).
+
+### Remediación de auditoría de dependencias — 2026-11-07
+
+- `npm ci` reportó inicialmente 26 vulnerabilidades: 2 bajas y 24 moderadas. Se actualizaron Nuxt a `4.6.4` y ESLint a `10.14.0`, versiones compatibles con Node 22.23.4, y se fijaron overrides para `glob@14.0.2` y `minimatch@11.0.1`. Los checks lint, typecheck Nuxt y build pasan.
+- La auditoría final reporta 7 bajas, 0 moderadas/altas/críticas. Los advisories remanentes de Nuxt ofrecen solo Nuxt `4.1.3` como fix, que es anterior a `4.6.2`, versión que corrige advisories previos de route rules y `useHeadSafe`; no se acepta esa degradación. `deepmerge@4.3.1` sigue afectado por GHSA-gcqx-w48m-w2h4 y es la última versión publicada en npm; no hay versión corregida disponible.
+- No se ejecutó `npm audit fix --force` ni se ocultaron findings. Revalidar los avisos remanentes cuando Nuxt o deepmerge publiquen una solución compatible.

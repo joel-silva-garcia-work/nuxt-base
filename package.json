@@ -19,7 +19,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "nuxt": "4.5.2",
+    "nuxt": "4.6.4",
     "pg": "8.23.1",
     "typeorm": "1.1.2",
     "vue": "3.5.44",
@@ -30,9 +30,13 @@
     "@nuxt/eslint": "1.17.0",
     "@types/node": "24.19.2",
     "@types/pg": "8.23.1",
-    "eslint": "10.13.0",
+    "eslint": "10.14.0",
     "typescript": "5.9.3",
     "vitest": "5.0.5",
     "vue-tsc": "3.3.13"
+  },
+  "overrides": {
+    "glob": "14.0.2",
+    "minimatch": "11.0.1"
   }
 }

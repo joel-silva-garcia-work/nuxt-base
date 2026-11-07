@@ -24,7 +24,7 @@ jobs:
       image: node:22.23.4-bookworm-slim
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install dependencies
         run: npm ci
@@ -77,7 +77,7 @@ jobs:
       TEST_DB_PASSWORD: ci-only-password
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install dependencies
         run: npm ci
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build application image
         run: |

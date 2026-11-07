@@ -59,19 +59,28 @@ jobs:
         image: postgres:17-alpine
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ci-only-password
-          POSTGRES_DB: nuxt_base_test
+          POSTGRES_PASSWORD: ci-only-admin-password
+          POSTGRES_DB: postgres
         options: >-
-          --health-cmd "pg_isready -U postgres -d nuxt_base_test"
+          --health-cmd "pg_isready -U postgres -d postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ci-only-admin-password
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: nuxt_base
+      DB_USER: nuxt_base_app
+      DB_PASSWORD: ci-only-runtime-password
+      DB_SSL: disable
       TEST_DB_HOST: postgres
       TEST_DB_PORT: "5432"
       TEST_DB_NAME: nuxt_base_test
-      TEST_DB_USER: postgres
-      TEST_DB_PASSWORD: ci-only-password
+      TEST_DB_USER: nuxt_base_test_app
+      TEST_DB_PASSWORD: ci-only-test-password
+      TEST_DB_SSL: disable
     steps:
       - name: Check out source
         uses: actions/checkout@v5
@@ -79,17 +88,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: PostgreSQL integration tests
+      - name: Install PostgreSQL client
         run: |
-          if [ -n "$(find tests/integration -type f -name '*.test.ts' -print -quit 2>/dev/null)" ]; then
-            npm run test:integration
-          else
-            echo "::notice::No PostgreSQL integration test files exist yet; this suite will run automatically when added."
-          fi
+          apt-get update
+          apt-get install --yes --no-install-recommends postgresql-client
+
+      - name: Provision isolated development and test databases
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: psql --host postgres --username "$POSTGRES_USER" --dbname postgres --file scripts/sql/provision.sql
+
+      - name: Check database connections
+        run: npm run db:check
+
+      - name: PostgreSQL integration tests
+        run: npm run test:integration
 
   docker-validation:
     name: Docker and Compose validation
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_ADMIN_PASSWORD: ci-only-admin-password
+      DB_PASSWORD: ci-only-runtime-password
+      TEST_DB_PASSWORD: ci-only-test-password
+      DB_NAME: nuxt_base
+      DB_USER: nuxt_base_app
+      TEST_DB_NAME: nuxt_base_test
+      TEST_DB_USER: nuxt_base_test_app
     steps:
       - name: Check out source
         uses: actions/checkout@v5
@@ -102,6 +127,18 @@ jobs:
 
       - name: Start Compose app and wait for health
         run: docker compose --env-file .env.example up --build --detach --wait --wait-timeout 180
+
+      - name: Provision Compose databases
+        run: >-
+          docker compose --env-file .env.example exec --no-TTY postgres
+          sh -ec 'PGPASSWORD="$POSTGRES_PASSWORD" exec psql -h 127.0.0.1
+          -U "$POSTGRES_USER" -d postgres -f /provision/provision.sql'
+
+      - name: Check development and test connections from app container
+        run: docker compose --env-file .env.example exec --no-TTY app npm run db:check
+
+      - name: Run integration tests from testing container
+        run: docker compose --env-file .env.example --profile testing run --build --rm tests npm run test:integration
 
       - name: Smoke test app in container
         run: >-

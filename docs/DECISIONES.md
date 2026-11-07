@@ -81,3 +81,12 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - El job Docker de CI construye la imagen de producción, valida Compose, arranca el servicio de desarrollo y comprueba la respuesta HTTP. Las pruebas unitarias se activarán cuando se incorporen archivos de test; no se reportan suites inexistentes como ejecutadas.
 - Documentación mínima de ejecución con Compose en `README.md`; la guía de entrega completa sigue en F8.1.
 - Verificación remota de Docker build/arranque: CI run 42400395114, SUCCESS; Dockerfile de producción construido, Compose validado, servicio de desarrollo healthy y smoke test HTTP aprobado. El build Docker local no concluyó por baja velocidad de descarga, queda registrado como intento no exitoso y no afecta la verificación remota reproducible.
+
+## F1.2 — PostgreSQL en contenedor — 2026-11-07
+
+- Compose añade PostgreSQL 17 separado para desarrollo y pruebas, con volumen persistente, healthcheck, configuración explícita del usuario administrativo y credenciales de aplicación desde `.env`. No se crean bases ni roles al iniciar Nuxt.
+- El aprovisionamiento requiere ejecutar manualmente `scripts/sql/provision.sql` con una cuenta superusuario. Crea `DB_NAME` y `TEST_DB_NAME` con roles no superusuario separados, y exige que cada rol sea dueño de su base; no borra datos ni cambia propietarios existentes. Rechaza roles preexistentes con privilegios elevados o membresías.
+- `server/platform/config/database.ts` valida nombres, puertos, credenciales y modo TLS; solo permite TLS desactivado para hosts locales/Compose y usa validación de certificados para `require`. `scripts/db-check.ts` conecta y valida ambas bases sin imprimir contraseñas ni mensajes crudos del driver.
+- El workflow queda configurado para aprovisionar las bases en PostgreSQL de servicio, validar conexiones y ejecutar pruebas de integración desde el job y desde el servicio de pruebas Compose; la ejecución remota está pendiente.
+- `.env.example` contiene nombres/configuración, no contraseñas; el usuario debe completar los campos vacíos localmente. Variables de CI son credenciales efímeras de prueba, no secretos productivos.
+- Verificación local: lint, typecheck (Nuxt y scripts), 6 pruebas unitarias, build de Nuxt y `docker compose config --quiet` pasan. No se verificó aún PostgreSQL real: la descarga de `postgres:17-alpine` quedó sin completar tras más de cuatro minutos y se detuvo; no quedaron contenedores ni volúmenes del intento.

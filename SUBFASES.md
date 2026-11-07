@@ -1,10 +1,10 @@
 # SUBFASES — Objetivos, entregas y verificación
 
 ## Contrato común obligatorio
-Una ejecución por ID, luego detenerse. Dependencias VERIFICADAS y fase anterior CERRADA para abrir otra. Desde F0.2 se usa Git y un repositorio remoto autorizado: `dev` es la rama estable y cada tarea independiente tiene su propia rama `change/<subfase>-<slug>`. No crear ramas comunes `phase/*` ni hacer commits directos en `dev`; fixes y documentación de integración también tienen su propia rama. Una tarea dependiente parte de la rama del prerrequisito aún no integrado; al cierre de fase se integran mediante PR, en orden de dependencias, todas las ramas verificadas. No integrar cambios sin verificar. Publicar ramas en el remoto requiere autorización; nunca borrar ramas sin autorización. F0.2 inicializa el repositorio y versiona también los documentos creados en F0.1.
+Una ejecución por ID, luego detenerse. Dependencias VERIFICADAS y fase anterior CERRADA para abrir otra. Desde F0.2 se usa Git y un repositorio remoto autorizado: `dev` es la rama estable y cada tarea independiente tiene su propia rama `change/<subfase>-<slug>`. No crear ramas comunes `phase/*` ni commits de cambios directamente en `dev`; fixes y documentación de integración también tienen su propia rama. Para el fallback autorizado sin PR, se permite un único commit documental de recibo en `dev` después del merge, solo para registrar hash y resultado final, sin cambios funcionales. Una tarea dependiente parte de la rama del prerrequisito aún no integrado; integrar las ramas verificadas en orden de dependencias, preferentemente mediante PR. Si no se puede crear o confirmar un PR por falta de herramienta o autenticación, el merge sin PR requiere autorización explícita del usuario responsable, registro del impedimento y las mismas verificaciones. Nunca eludir protección de rama; si bloquea la integración, detenerse BLOQUEADA. No integrar cambios sin verificar. Publicar ramas en el remoto requiere autorización; nunca borrar ramas sin autorización. F0.2 inicializa el repositorio y versiona también los documentos creados en F0.1.
 Cada cambio realizado debe quedar en su rama con commits cuyo mensaje describa la acción concreta; la expresión «commit si corresponde» en los cierres no exime de versionar cambios realizados. F0.1 se incorpora al repositorio en F0.2.
 Toda acción HTTP POST, PUT, PATCH o DELETE que cambie datos debe generar el audit trail conforme al contrato común; nuevos endpoints deben incluirlo desde su implementación y F4.5 verifica la cobertura completa.
-Objetivo de cada unidad = su título y entregables dentro de PLAN.md. Terminado: entregas reales, CI requerido aprobado, verificaciones indicadas, typecheck/tests afectados, puerta arquitectónica de PLAN.md cumplida con evidencias, estado actualizado, diff/migraciones/Docker revisados, comandos y resultados registrados, enlace al PR/merge y commits revisados desde F0.2. Los commits usan Conventional Commits con la subfase después del tipo y describen la acción (por ejemplo, `feat(F4.3/users): persistir usuarios con roles`); evitar mensajes genéricos. Nuevos endpoints con catálogo/wrapper/pruebas y audit trail.
+Objetivo de cada unidad = su título y entregables dentro de PLAN.md. Terminado: entregas reales, CI requerido aprobado, verificaciones indicadas, typecheck/tests afectados, puerta arquitectónica de PLAN.md cumplida con evidencias, estado actualizado, diff/migraciones/Docker revisados, comandos y resultados registrados, enlace al PR o evidencia del merge directo autorizado y commits revisados desde F0.2. Los commits usan Conventional Commits con la subfase después del tipo y describen la acción (por ejemplo, `feat(F4.3/users): persistir usuarios con roles`); evitar mensajes genéricos. Nuevos endpoints con catálogo/wrapper/pruebas y audit trail.
 Cada unidad debe demostrar reutilización frontend o modularidad backend cuando aplique: sin páginas con negocio, controles con fetch, handlers con consultas, dependencias cíclicas ni duplicación de reglas. Registrar NO APLICA justificado si no toca esas capas.
 Si demasiado grande, subdividir antes en .a/.b y actualizar contratos/estado. Padre solo verificado al cumplir hijos y comprobación conjunta. Falta de entorno/prueba = BLOQUEADA. No alterar seguridad para avanzar. No merge salvo unidad de integración.
 
@@ -13,14 +13,14 @@ Desde F0.2, Docker es obligatorio para la aplicación Nuxt, PostgreSQL, pruebas 
 
 ## Decisiones adoptadas
 - Una rama por tarea independiente, nombrada `change/<subfase>-<slug>`; las tareas dependientes parten de su prerequisito aún no integrado.
-- Integración mediante PR obligatorio y merge commit `--no-ff`; no hacer commits directos en `dev`. Pipeline requerido en cada rama/PR: lint, typecheck, build, unitarias, integración con PostgreSQL y E2E afectados. Validar Dockerfile/Compose si cambian.
+- Integración preferente mediante PR y merge commit `--no-ff`; fallback sin PR solo con autorización explícita, impedimento registrado y checks disponibles aprobados. No hacer commits de cambios directamente en `dev` ni eludir protección de rama. Pipeline requerido en cada rama y en cada PR/integración: lint, typecheck, build, unitarias, integración con PostgreSQL y E2E afectados. Validar Dockerfile/Compose si cambian.
 - Commits Conventional Commits con la subfase después del tipo: `feat(F4.3/users): crear usuarios con roles`.
 - Audit trail solo para mutaciones exitosas con cambios de datos. Registrar fallos/rechazos como eventos de seguridad separados; no crear trail para operación sin cambios.
 - La infraestructura común del audit trail se construye en F3.0 antes de los primeros endpoints mutables; F4.0 completa retención/preparación de CRUD y F4.5 verifica cobertura integral.
 - El audit trail contiene campos separados `previous_state` y `current_state` JSONB. Diferencia plana por columna; null es valor, campo omitido es ausencia de cambio y los arrays se comparan completos.
 - Guardar mutación y trail atómicamente. Permitir hasta tres reintentos adicionales solo para fallos transitorios de escritura recuperables mediante savepoint; si se agotan, rollback de toda la operación. Errores permanentes o de transacción/conexión revierten sin reintento.
 - Capturar IP, URL saneada (ruta sin query ni fragmento), actor, acción, entidad, método HTTP, código HTTP y request/correlation ID, además de ID y fecha UTC generada por PostgreSQL. Excluir secretos. Archivar y finalmente eliminar los trails conforme a destino y plazos de retención activa y de archivo que deben aprobarse antes de F4.0.
-- Pipeline CI corre en cada rama y PR; bloquea la integración si falla un check requerido: lint, typecheck, build, unitarias, integración PostgreSQL en contenedor y E2E afectados. Validar Dockerfile/Compose cuando cambien. Para cerrar una unidad, documentar diff revisado, migraciones y compatibilidad Docker, comandos ejecutados, resultados y enlace al PR/merge.
+- Pipeline CI corre en cada rama y bloquea la integración (por PR o merge directo autorizado) si falla un check requerido: lint, typecheck, build, unitarias, integración PostgreSQL en contenedor y E2E afectados. Validar Dockerfile/Compose cuando cambien. Para cerrar una unidad, documentar diff revisado, migraciones y compatibilidad Docker, comandos ejecutados, resultados y enlace al PR o evidencia del merge directo.
 
 ## Skills y prompts indispensables por subfase
 Antes de ejecutar una subfase, consulta su fila en esta matriz y lee completos todos los `SKILL.md` y prompts enumerados. Son requisitos de trabajo, no sugerencias ni recursos que se suponga que el agente ya cargó automáticamente. Si no puede acceder a alguno, marca la subfase BLOQUEADA y explica cuál falta; no lo omitas silenciosamente.
@@ -67,9 +67,9 @@ Prioridad ante discrepancias: PLAN.md y el contrato de la subfase > PROMPT_CURSO
 
 ### F0.2 — Git, diseño modular y contratos
 - Dependencia: F0.1.
-- Objetivo/entregables: Inicializar el repositorio Git y `dev` estable, versionar los documentos F0.1, definir ramas por tarea independiente, PR y commits Conventional Commits con subfase; docs/API.md; mapa de módulos/dependencias, API pública interna, capas Vue, transacciones, sesiones/CSRF, catálogo y estrategia Docker/Compose para la app.
-- Verificación específica: Revisar PLAN completo; dependencias acíclicas; contratos de componente/caso de uso, discovery de rutas y estrategia de fronteras definidos; configurar remoto autorizado, proteger `dev` contra commits directos y establecer PR/checks requeridos; crear una rama `change/f0.2-<slug>` por tarea; no incorporar Redis.
-- Cierre: contrato común y puerta arquitectónica cumplidos; registrar evidencia y commits descriptivos, abrir PR, validar checks e integrar con merge commit `--no-ff` como bootstrap inicial; comprobar árbol limpio y detenerse.
+- Objetivo/entregables: Inicializar el repositorio Git y `dev` estable, versionar los documentos F0.1, definir ramas por tarea independiente, flujo de PR/fallback autorizado y commits Conventional Commits con subfase; docs/API.md; mapa de módulos/dependencias, API pública interna, capas Vue, transacciones, sesiones/CSRF, catálogo y estrategia Docker/Compose para la app.
+- Verificación específica: Revisar PLAN completo; dependencias acíclicas; contratos de componente/caso de uso, discovery de rutas y estrategia de fronteras definidos; configurar remoto autorizado, proteger `dev` contra commits de cambios directos y establecer CI/checks requeridos; crear una rama `change/f0.2-<slug>` por tarea; no incorporar Redis.
+- Cierre: contrato común y puerta arquitectónica cumplidos; registrar evidencia y commits descriptivos, crear PR y validar checks cuando sea posible o documentar el impedimento y la autorización del fallback; integrar con merge commit `--no-ff`, registrar el resultado y comprobar árbol limpio antes de detenerse.
 
 ## F1
 
@@ -93,10 +93,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F1, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F1 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F1 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -122,10 +122,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F2, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F2 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F2 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -175,10 +175,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F3, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F3 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F3 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -228,10 +228,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F4, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F4 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F4 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -269,10 +269,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F5, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F5 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F5 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -322,10 +322,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F6, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F6 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F6 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -351,10 +351,10 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F7, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F7 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F7 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.
 
@@ -374,9 +374,9 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F8, conforme al contrato
 - Verificación:
   1. Árbol limpio, diff revisado, cambios commiteados y ningún merge ajeno pendiente.
   2. Lint/typecheck/build/regresión exigible y puerta arquitectónica aprobados ANTES de integrar.
-  3. Abrir un PR por cada rama verificada de F8 hacia `dev`; aprobar checks y fusionar en orden de dependencias con merge commit `--no-ff`. Resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
+  3. Integrar cada rama verificada de F8 en orden de dependencias, preferentemente por PR con checks aprobados; si no puede crearse/confirmarse por falta de herramienta o autenticación, usar solo el fallback autorizado del contrato común. Merge commit `--no-ff`; resolver conflictos sin quitar seguridad/tests ni romper fronteras/componentes.
   4. Completar merge; sin archivos sin resolver ni marcadores introducidos.
   5. Repetir checks EN dev, incluida revisión de composición/modularidad afectada por conflictos.
-  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones, pasar checks y abrir PR antes de reintentar. Sin remoto autorizado, detenerse bloqueado.
+  6. Si falla: BLOQUEADA; crear rama propia `change/<subfase>-integration-fix`, sin nuevas funciones; pasar checks y reintentar por PR o fallback autorizado. Sin remoto autorizado o si la protección bloquea la integración, detenerse bloqueado.
   7. Registrar merge/fixes/resultados en commit descriptivo de una rama propia y verificada; integrar esa rama, comprobar ancestría de todas las ramas integradas y árbol limpio.
 - Cierre: subfase VERIFICADA y fase CERRADA solo con evidencia posterior aprobada. No publicar ni borrar ramas sin autorización. Detenerse antes de siguiente fase.

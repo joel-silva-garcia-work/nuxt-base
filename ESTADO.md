@@ -95,7 +95,7 @@ Esta plantilla NO representa una inspección del proyecto. Conservar y reconcili
 - Estado: BLOQUEADA para cierre integrado; se conserva aparte la evidencia VERIFICADA histórica del 2026-10-29.
 - Base: usuario autorizó bootstrap local tras confirmar ausencia de `.git`; F0.1 histórica VERIFICADA. Las referencias a F2.3 no están en este checkout y no se simuló su historial.
 - Entregas: `.gitignore`; `docs/API.md` (capas, ownership de 10 módulos, grafo, contratos de casos de uso/UoW, catálogo de 22 claves, Vue/SSR, persistencia, audit trails y pruebas); sección F0.2 en `docs/DECISIONES.md`.
-- Git: baseline nuevo en `dev`, `d7727b0` (`chore(F0.2): adopt current workspace baseline`); rama activa `change/f0.2-api-contracts`. No se creó remoto ni se publicaron ramas. Falta PR/checks y protección efectiva de `dev`.
+- Git: baseline nuevo en `dev`, `d7727b0` (`chore(F0.2): adopt current workspace baseline`); rama activa `change/f0.2-api-contracts`, commit F0.2 `1f8e11e` (`docs(F0.2): define modular API and module boundaries`). No se creó remoto ni se publicaron ramas. Falta PR/checks y protección efectiva de `dev`.
 - Compatibilidad consultada: `node --version` v22.23.4; `npm --version` 10.9.9; `git --version` 2.49.0. Registro npm: Nuxt 4.5.2, Vue 3.5.44, TypeORM 1.1.2 y pg 8.23.1 aceptan la versión Node declarada por el proyecto.
 - Verificación documental: grafo de 10 módulos acíclico; catálogo 22/22 entradas únicas (21 operaciones del PLAN y GET CSRF auxiliar), políticas correctas. Comprobación por script Node temporal en sesión; no se añadió herramienta permanente.
 - No ejecutado: lint/build/typecheck/unitarias/integración/E2E, ni Docker/Compose o conexión a PostgreSQL; no hay `node_modules` y F0.2 solo produce diseño. No se afirman esos resultados.

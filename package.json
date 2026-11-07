@@ -1,0 +1,38 @@
+{
+  "name": "nuxt-base",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  },
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck && tsc -p scripts/tsconfig.json",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "node --env-file-if-exists=.env node_modules/vitest/vitest.mjs run --project integration",
+    "db:check": "node --env-file-if-exists=.env scripts/db-check.ts",
+    "db:migrate": "node --env-file-if-exists=.env node_modules/typeorm/cli.js migration:run -d server/composition/data-source.cli.ts",
+    "db:migrate:revert": "node --env-file-if-exists=.env node_modules/typeorm/cli.js migration:revert -d server/composition/data-source.cli.ts",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "4.5.2",
+    "pg": "8.23.1",
+    "typeorm": "1.1.2",
+    "vue": "3.5.44",
+    "vue-router": "5.4.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "1.17.0",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "eslint": "10.13.0",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5",
+    "vue-tsc": "3.3.13"
+  }
+}

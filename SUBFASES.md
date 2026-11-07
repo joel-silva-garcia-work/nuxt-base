@@ -67,8 +67,8 @@ Prioridad ante discrepancias: PLAN.md y el contrato de la subfase > PROMPT_CURSO
 
 ### F0.2 — Git, diseño modular y contratos
 - Dependencia: F0.1.
-- Objetivo/entregables: Inicializar el repositorio Git y `dev` estable, versionar los documentos F0.1, definir ramas por tarea independiente, flujo de PR/fallback autorizado y commits Conventional Commits con subfase; docs/API.md; mapa de módulos/dependencias, API pública interna, capas Vue, transacciones, sesiones/CSRF, catálogo y estrategia Docker/Compose para la app.
-- Verificación específica: Revisar PLAN completo; dependencias acíclicas; contratos de componente/caso de uso, discovery de rutas y estrategia de fronteras definidos; configurar remoto autorizado, proteger `dev` contra commits de cambios directos y establecer CI/checks requeridos; crear una rama `change/f0.2-<slug>` por tarea; no incorporar Redis.
+- Objetivo/entregables: Inicializar el repositorio Git y `dev` estable, versionar los documentos F0.1, definir ramas por tarea independiente, flujo de PR/fallback autorizado y commits Conventional Commits con subfase; workflow CI base para todas las ramas; docs/API.md; mapa de módulos/dependencias, API pública interna, capas Vue, transacciones, sesiones/CSRF, catálogo y estrategia Docker/Compose para la app.
+- Verificación específica: Revisar PLAN completo; dependencias acíclicas; contratos de componente/caso de uso, discovery de rutas y estrategia de fronteras definidos; configurar remoto autorizado, proteger `dev` contra commits de cambios directos y establecer workflow/checks requeridos; validar YAML y ejecutar los checks disponibles; crear una rama `change/f0.2-<slug>` por tarea; no incorporar Redis.
 - Cierre: contrato común y puerta arquitectónica cumplidos; registrar evidencia y commits descriptivos, crear PR y validar checks cuando sea posible o documentar el impedimento y la autorización del fallback; integrar con merge commit `--no-ff`, registrar el resultado y comprobar árbol limpio antes de detenerse.
 
 ## F1
@@ -77,14 +77,14 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F1, conforme al contrato
 
 ### F1.1 — Scaffold y contenedores
 - Dependencia: F0.2.
-- Objetivo/entregables: Nuxt, TS, lockfile, scripts, Dockerfile y Compose para app y servicios; documentación versionada desde F0.2.
-- Verificación específica: Arranque, lint/typecheck/build y pruebas dentro de contenedores; no depender de Node o servicios instalados localmente; si grande dividir .a scaffold y .b contenedores.
+- Objetivo/entregables: Nuxt, TS, lockfile, scripts, Dockerfile y Compose para app y servicios; completar el workflow base `.github/workflows/ci.yml` con checks de calidad y validación real de Docker/Compose; documentación versionada desde F0.2.
+- Verificación específica: Arranque, lint/typecheck/build y pruebas dentro de contenedores; no depender de Node o servicios instalados localmente; CI ejecuta lint/typecheck/build y pruebas unitarias existentes, y construye/valida Dockerfile/Compose reales; si grande dividir .a scaffold y .b contenedores.
 - Cierre: contrato común y puerta arquitectónica cumplidos; registrar evidencia, commit si corresponde y detenerse sin merge.
 
 ### F1.2 — PostgreSQL en contenedor
 - Dependencia: F1.1.
-- Objetivo/entregables: PostgreSQL en Docker Compose, variables validadas, procedimiento SQL autorizado, db:check y bases separadas para desarrollo/pruebas.
-- Verificación específica: Conectar realmente desde los contenedores de desarrollo/pruebas; no secretos en imágenes ni repositorio; permisos ausentes bloquean.
+- Objetivo/entregables: PostgreSQL en Docker Compose, variables validadas, procedimiento SQL autorizado, db:check y bases separadas para desarrollo/pruebas; activar en CI las suites de integración con PostgreSQL.
+- Verificación específica: Conectar realmente desde los contenedores de desarrollo/pruebas y desde el servicio PostgreSQL del workflow CI; no secretos en imágenes ni repositorio; permisos ausentes bloquean.
 - Cierre: contrato común y puerta arquitectónica cumplidos; registrar evidencia, commit si corresponde y detenerse sin merge.
 
 ### F1.3 — Integración y cierre de F1
@@ -335,8 +335,8 @@ Ramas: una `change/<subfase>-<slug>` por cada cambio de F7, conforme al contrato
 
 ### F7.1 — E2E funcional
 - Dependencia: F6.7.
-- Objetivo/entregables: Fixtures seguras y navegador PostgreSQL dedicado.
-- Verificación específica: Admin crea rol vacío/asigna lectura/crea usuario; escritura 403 directa; segundo rol suma/revocación resta.
+- Objetivo/entregables: Fixtures seguras, navegador y PostgreSQL dedicados; incorporar las suites E2E al workflow CI.
+- Verificación específica: Admin crea rol vacío/asigna lectura/crea usuario; escritura 403 directa; segundo rol suma/revocación resta; E2E se ejecutan en contenedores en cada rama e integración.
 - Cierre: contrato común y puerta arquitectónica cumplidos; registrar evidencia, commit si corresponde y detenerse sin merge.
 
 ### F7.2 — Seguridad y arquitectura

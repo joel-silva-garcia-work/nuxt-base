@@ -3,30 +3,33 @@
 ## Resumen vigente
 Esta plantilla NO representa una inspección del proyecto. Conservar y reconciliar evidencias anteriores; no sobrescribir progreso real.
 - Subfase inicial si proyecto nuevo: F0.1.
-- Última verificada: F2.3; fases F1 y F2 CERRADAS (2026-10-29).
-- Rama/commit/merge: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. Se conservan las ramas de fase.
-- Próxima acción: F3.1 (catálogo y wrapper; abrir `phase/f3-auth-rbac` desde dev limpio), con confirmación previa y lectura obligatoria de las skills/prompts asignados en la matriz de SUBFASES.md.
+- Última verificada histórica: F2.3; fases F1 y F2 figuran CERRADAS (2026-10-29). Ese historial no está en el workspace adoptado.
+- Rama/commit/merge históricos declarados: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. No se recrearon esas ramas o commits.
+- Próxima acción vigente: completar el merge directo autorizado de F0.2 a `dev` sin PR y confirmar qué checks/protección se pueden verificar; no iniciar F1.1 ni reanudar F3.1 hasta reconciliar el historial.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
+- Reconciliación de workspace (2026-11-07): el usuario autorizó iniciar un repositorio local en este directorio. Se creó baseline `dev` (`d7727b0`) y rama `change/f0.2-api-contracts`; son una nueva línea local de adopción, no reconstruyen ni autentican el historial F2.3 anterior. Se actualizó el flujo para preferir PR y permitir merge sin PR solo con autorización explícita, impedimento documentado y sin eludir protección; ver D-03 en `docs/DECISIONES.md`.
 
 ## Avance
 | ID | Objetivo | Estado |
 |---|---|---|
 | F0.1 | Entorno y versiones | VERIFICADA |
-| F0.2 | Diseño modular y contratos | VERIFICADA |
+| F0.2 | Diseño modular y contratos | VERIFICADA (histórico 2026-10-29); BLOQUEADA (adopción local 2026-11-07) |
 | F1.1 | Git y scaffold | VERIFICADA |
 | F1.2 | PostgreSQL nativo | VERIFICADA |
 | F1.3 | Integración y cierre | VERIFICADA |
 | F2.1 | Módulos y persistencia | VERIFICADA |
 | F2.2 | Migraciones y arnés DB | VERIFICADA |
 | F2.3 | Integración y cierre | VERIFICADA |
+| F3.0 | Infraestructura base de audit trail | PENDIENTE |
 | F3.1 | Catálogo y wrapper | PENDIENTE |
 | F3.2 | Sync y bootstrap | PENDIENTE |
 | F3.3 | Sesiones y login | PENDIENTE |
 | F3.4 | Logout y contraseña | PENDIENTE |
 | F3.5 | RBAC efectivo | PENDIENTE |
 | F3.6 | Integración y cierre | PENDIENTE |
+| F4.0 | Retención y preparación de audit trail | PENDIENTE |
 | F4.1 | CRUD roles modular | PENDIENTE |
 | F4.2 | Catálogo y asignaciones | PENDIENTE |
 | F4.3 | Usuarios lectura/creación | PENDIENTE |
@@ -87,6 +90,18 @@ Esta plantilla NO representa una inspección del proyecto. Conservar y reconcili
 - Commit: no aplica (F0 precede a Git).
 - Bloqueos y próxima acción: ninguno. Siguiente: F1.1.
 - Puerta arquitectónica: es una unidad de diseño sin código. Criterios 1–5 y 7: NO APLICA como implementación, pero quedan definidos en API.md (secciones 2–5, 7, 9 y 10). Criterio 6: NO APLICA (no hay código que probar). Revisión manual, salvo la aciclicidad y la cobertura del catálogo, comprobadas por script.
+
+## Reejecución local F0.2 — 2026-11-07
+- Estado: BLOQUEADA para cierre integrado; se conserva aparte la evidencia VERIFICADA histórica del 2026-10-29.
+- Base: usuario autorizó bootstrap local tras confirmar ausencia de `.git`; F0.1 histórica VERIFICADA. Las referencias a F2.3 no están en este checkout y no se simuló su historial.
+- Entregas: `.gitignore`; `docs/API.md` (capas, ownership de 10 módulos, grafo, contratos de casos de uso/UoW, catálogo de 22 claves, Vue/SSR, persistencia, audit trails y pruebas); sección F0.2 en `docs/DECISIONES.md`.
+- Git: baseline nuevo en `dev`, `d7727b0` (`chore(F0.2): adopt current workspace baseline`); rama activa `change/f0.2-api-contracts`, commits F0.2 `1f8e11e` (`docs(F0.2): define modular API and module boundaries`) y `c4aa92f` (registro de verificación).
+- Acceso remoto (2026-11-07): `origin` HTTPS es `https://github.com/joel-silva-garcia-work/nuxt-base.git`; helper de Git configurado globalmente `osxkeychain`. El usuario seleccionó conservar HTTPS. `git ls-remote` confirmó `origin/change/f0.2-api-contracts` en `c4aa92f`; `git push --dry-run` a rama existente y a una referencia nueva terminó OK sin publicar cambios. No se leyeron ni solicitaron credenciales. GitHub CLI no está instalado.
+- Integración F0.2 (2026-11-07): GitHub no ofrece herramienta de creación/merge de PR en esta sesión; la comparación web mostró inicio de sesión y no hay PR para la rama. `origin` publica solo `change/f0.2-api-contracts`, no `dev`. El usuario autorizó merge sin PR. Pendiente documentar resultado real del merge y verificar checks/protección; no se afirmará cierre si alguna condición sigue sin comprobar.
+- Compatibilidad consultada: `node --version` v22.23.4; `npm --version` 10.9.9; `git --version` 2.49.0. Registro npm: Nuxt 4.5.2, Vue 3.5.44, TypeORM 1.1.2 y pg 8.23.1 aceptan la versión Node declarada por el proyecto.
+- Verificación documental: grafo de 10 módulos acíclico; catálogo 22/22 entradas únicas (21 operaciones del PLAN y GET CSRF auxiliar), políticas correctas. Comprobación por script Node temporal en sesión; no se añadió herramienta permanente.
+- No ejecutado: lint/build/typecheck/unitarias/integración/E2E, ni Docker/Compose o conexión a PostgreSQL; no hay `node_modules` y F0.2 solo produce diseño. No se afirman esos resultados.
+- Puerta arquitectónica: unidad documental; Vue/backend no implementados. Contratos y fronteras documentados; revisión manual, con catálogo/grafo verificados por script. Próxima acción: ejecutar el merge directo autorizado y confirmar checks/protección de `dev`; no avanzar a F1.1.
 
 ## Evidencias F1.1
 - ID / fecha real / estado: F1.1 / 2026-10-29 / VERIFICADA.

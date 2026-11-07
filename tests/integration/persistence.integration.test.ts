@@ -50,7 +50,9 @@ describe('TypeORM persistence infrastructure', () => {
   it('initializes the isolated test database without creating schema objects', () => {
     expect(source.options.synchronize).toBe(false)
     expect(source.options.migrationsRun).toBe(false)
-    expect(source.entityMetadatas).toHaveLength(persistenceEntities.length)
+    expect(source.entityMetadatas).toHaveLength(persistenceEntities.length + 2)
+    expect(source.entityMetadatas.map(metadata => metadata.tableName)).toContain('user_roles')
+    expect(source.entityMetadatas.map(metadata => metadata.tableName)).toContain('role_permissions')
   })
 
   it('shares one transaction manager across repositories and expires its context', async () => {

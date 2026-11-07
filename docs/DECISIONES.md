@@ -90,3 +90,10 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - Verificación remota: [CI run 42408841230](https://github.com/joel-silva-garcia-work/nuxt-base/actions/runs/42408841230), SUCCESS en los tres jobs. PostgreSQL de servicio: aprovisionó ambos roles/bases, `db:check` y prueba de integración reales. Docker/Compose: build, arranque saludable, aprovisionamiento, `db:check` desde `app`, integración desde `tests` y smoke test HTTP.
 - `.env.example` contiene nombres/configuración, no contraseñas; el usuario debe completar los campos vacíos localmente. Variables de CI son credenciales efímeras de prueba, no secretos productivos.
 - Verificación local: lint, typecheck (Nuxt y scripts), 6 pruebas unitarias, build de Nuxt y `docker compose config --quiet` pasan. El intento local de descargar `postgres:17-alpine` se detuvo tras más de cuatro minutos; no quedaron contenedores ni volúmenes. La validación real de PostgreSQL quedó cubierta por CI remoto.
+
+## F1.3 — Integración y cierre de F1 — 2026-11-07
+
+- Prechecks: F1.1 verificada en `change/f1.1-scaffold-containers` (CI run 42402460345); F1.2 verificada en `change/f1.2-postgres-containers` (CI run 42409564126). La historia confirma F1.1 como ancestro de F1.2 y ambas ramas descienden de `dev`@80d314e. Los preflights `git merge-tree --write-tree` de los dos merges en orden no reportaron conflictos.
+- La revisión de seguridad F1.3 encontró que Compose publicaba PostgreSQL en todas las interfaces. En `change/f1.3-integration-fix`, el bind predeterminado se restringe a `127.0.0.1`; exponerlo requiere configurar explícitamente `POSTGRES_HOST_BIND_ADDRESS`. README documenta el cambio y CI comprueba la dirección predeterminada.
+- Checks locales del fix: lint, typecheck, 6 unitarias, build Nuxt, sintaxis YAML y verificaciones Compose para bind predeterminado loopback y override explícito pasan.
+- Estado: fix sin publicar todavía; falta CI remoto del fix, integración de F1.1/F1.2 y ejecución de los checks en `dev`. F1.3 no está cerrada.

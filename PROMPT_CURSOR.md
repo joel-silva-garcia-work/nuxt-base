@@ -29,7 +29,7 @@ Busca la fila exacta del ID en la matriz “Skills y prompts indispensables por 
 7. Registra endpoints con wrapper/política/catálogo y cobertura. Nunca desactives seguridad.
 8. Ejecuta verificaciones específicas/typecheck/tests. Aplica puerta arquitectónica PLAN.md criterio por criterio con evidencia o NO APLICA justificado. Comprueba reutilización, ausencia de ciclos, handlers/páginas delgados, DTO seguros, transacciones, consultas acotadas y aislamiento SSR. No afirmar automatización si la revisión fue manual.
 9. Si falla, corregir esta unidad o BLOQUEAR. Actualiza ESTADO con comandos/resultados y evidencias arquitectónicas; revisa diff/stage y commit al verificar. Sin secretos/trabajo ajeno.
-10. No merge en implementación. Si es unidad de integración, seguir PLAN: checks previos y PR preferido; si no se puede crear/confirmar por falta de herramienta o autenticación, exigir autorización explícita y registrar el impedimento antes de merge --no-ff a dev. Resolver conflictos preservando modularidad/reutilización, ejecutar checks EN dev, registrar fixes, autorización y evidencia, y comprobar ancestría/árbol limpio. Nunca eludir protección de rama; no cerrar si falla o se bloquea.
+10. No merge en implementación. Si es unidad de integración, seguir PLAN: no abrir Pull Requests; integrar ramas verificadas directamente con merge --no-ff a dev, tras checks previos y repetirlos EN dev. Resolver conflictos revisando ambas versiones, el contrato de negocio vigente y las pruebas; preservar reglas de negocio, seguridad y comportamiento compatible, sin ours/theirs masivo ni descartar tests. Agregar/ajustar pruebas y ejecutar checks afectados. Si el contrato no permite una resolución inequívoca, detenerse y pedir decisión. Nunca eludir protección de rama; si bloquea el merge directo, BLOQUEADA. Registrar hashes/fixes y evidencia, comprobar ancestría/árbol limpio.
 Sin autorización no publicar, borrar ramas, reescribir/destruir historial, guardar trabajo ajeno ni abortar merge preexistente. Dev compartida requiere política acordada.
 Máximo 250 palabras finales: ID/estado/rama, entregas, pruebas y revisión arquitectónica, commit, próximo ID o bloqueo. DETENTE, no otra unidad.
 ```
@@ -38,9 +38,9 @@ Máximo 250 palabras finales: ID/estado/rama, entregas, pruebas y revisión arqu
 ```text
 Ejecuta SOLO F1.3 con PLAN/SUBFASES/ESTADO. Comprueba todas las unidades verificadas y Git limpio. No nuevas funciones.
 Lee y aplica todas las skills y prompts adicionales de F1.3 indicados en la matriz de SUBFASES.md; no supongas carga automática. Si alguno falta, BLOQUEADA.
-Ejecuta checks previos y puerta arquitectónica. Abre PR y confirma sus checks cuando sea posible; si no se puede crear/confirmar por falta de herramienta o autenticación, exige autorización explícita del usuario y registra el impedimento antes de integrar con merge --no-ff en dev. Resuelve conflictos preservando componentes/contratos/fronteras/seguridad y ejecuta checks posteriores EN dev. Nunca eludas protección de rama.
-Si falla: BLOQUEADA; solo arreglos de integración con commits explícitos; repetir. Si requiere decisión, detenerse.
-Registrar hashes merge/fixes y evidencias en commit documental posterior; verificar ancestría/árbol limpio. Solo entonces CERRADA. No push/borrar rama. Máximo 250 palabras y detenerse.
+Ejecuta checks previos y puerta arquitectónica. No abras Pull Request: integra directamente con merge --no-ff en dev, respetando dependencias y checks requeridos. Si la protección de rama bloquea el merge directo, detente BLOQUEADA; no la eludas.
+Resuelve conflictos inspeccionando ambas versiones y contrastando PLAN.md, docs/API.md y las pruebas para preservar la lógica de negocio. Conserva los cambios compatibles, no uses ours/theirs masivo ni elimines reglas, seguridad o tests. Ajusta/agrega pruebas y repite checks posteriores EN dev. Si el contrato no determina una solución inequívoca, detente y pide decisión.
+Si falla: BLOQUEADA; solo arreglos de integración en rama propia con commits explícitos; verificar y volver a integrar mediante merge directo. Registrar hashes merge/fixes y evidencias; verificar ancestría/árbol limpio. Solo entonces CERRADA. No push/borrar rama. Máximo 250 palabras y detenerse.
 ```
 
 ## Auditoría independiente — reemplazar F4.2

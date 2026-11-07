@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality and unit tests
+    runs-on: ubuntu-latest
+    container:
+      image: node:22.23.4-bookworm-slim
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: |
+          if [ -f scripts/tsconfig.json ]; then
+            npm run typecheck
+          else
+            npm exec -- nuxt typecheck
+            echo "::notice::scripts/tsconfig.json is not present; checked the Nuxt application only."
+          fi
+
+      - name: Unit tests
+        run: |
+          if [ -n "$(find tests/unit -type f -name '*.test.ts' -print -quit 2>/dev/null)" ]; then
+            npm run test:unit
+          else
+            echo "::notice::No unit test files exist yet; this suite will run automatically when added."
+          fi
+
+      - name: Build
+        run: npm run build
+
+  integration:
+    name: PostgreSQL integration tests
+    runs-on: ubuntu-latest
+    container:
+      image: node:22.23.4-bookworm-slim
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: nuxt_base_test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d nuxt_base_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DB_HOST: postgres
+      TEST_DB_PORT: "5432"
+      TEST_DB_NAME: nuxt_base_test
+      TEST_DB_USER: postgres
+      TEST_DB_PASSWORD: ci-only-password
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: PostgreSQL integration tests
+        run: |
+          if [ -n "$(find tests/integration -type f -name '*.test.ts' -print -quit 2>/dev/null)" ]; then
+            npm run test:integration
+          else
+            echo "::notice::No PostgreSQL integration test files exist yet; this suite will run automatically when added."
+          fi
+
+  docker-validation:
+    name: Docker and Compose validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Build application image
+        run: |
+          if [ -f Dockerfile ]; then
+            docker build --tag nuxt-base:ci .
+          else
+            echo "::notice::Dockerfile is not present yet; image validation is deferred to F1.1."
+          fi
+
+      - name: Validate Compose configuration
+        run: |
+          compose_file=
+          for candidate in compose.yaml compose.yml docker-compose.yaml docker-compose.yml; do
+            if [ -f "$candidate" ]; then
+              compose_file=$candidate
+              break
+            fi
+          done
+
+          if [ -z "$compose_file" ]; then
+            echo "::notice::Compose configuration is not present yet; validation is deferred to F1.1."
+          elif [ ! -f .env.example ]; then
+            echo "::error::Compose validation requires the documented .env.example file."
+            exit 1
+          else
+            docker compose --env-file .env.example -f "$compose_file" config --quiet
+          fi

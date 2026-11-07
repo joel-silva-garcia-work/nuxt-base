@@ -40,7 +40,7 @@ Las siguientes opciones fueron seleccionadas para el contrato del proyecto y se 
 |---|---|
 | D-01 | Una rama por tarea independiente, no por subfase completa. Las tareas dependientes parten de su prerequisito aún no integrado. |
 | D-02 | Integrar mediante merge commit `--no-ff`; no usar squash ni rebase. |
-| D-03 | PR preferido hacia `dev`, con pipeline y checks requeridos aprobados. Excepción vigente desde 2026-11-07: si no se puede crear/confirmar el PR por falta de herramienta o autenticación, se permite merge sin PR solo con autorización explícita, impedimento documentado y checks disponibles aprobados; nunca eludir protección de rama. No commits de cambios directamente en `dev`. |
+| D-03 | No abrir PR. Integrar ramas verificadas directamente en `dev` mediante merge commit `--no-ff`, con pipeline y checks requeridos aprobados. No hacer commits de cambios directamente en `dev` ni eludir protecciones; si la política de ramas impide el merge directo, dejar el trabajo BLOQUEADO. |
 | D-04 | Conventional Commits con la subfase como scope después del tipo, por ejemplo `feat(F4.3/users): crear usuarios con roles`. |
 | D-05 | Docker obligatorio para app, PostgreSQL, pruebas y servicios auxiliares en desarrollo, CI y entrega local. Producción fuera de este alcance. |
 | D-06 | PostgreSQL para sesiones y contadores de rate limit requeridos por el plan; no Redis ni caché general. |
@@ -50,14 +50,14 @@ Las siguientes opciones fueron seleccionadas para el contrato del proyecto y se 
 | D-10 | Metadatos de actor, IP, URL saneada (ruta sin query ni fragmento), acción/entidad, método, código HTTP y request/correlation ID, además de ID y fecha UTC de PostgreSQL. Estados anterior y actual separados. |
 | D-11 | Excluir secretos; archivar y finalmente eliminar registros al vencer los plazos aprobados de retención activa y del archivo. |
 | D-12 | Transacción atómica; hasta tres reintentos adicionales para fallo transitorio recuperable mediante savepoint. Si se agotan, rollback de la operación. |
-| D-13 | CI obligatorio en cada rama e integración (PR o merge directo autorizado); los checks requeridos bloquean la integración. |
-| D-14 | Evidencia de cierre con diff/migraciones/Docker revisados, comandos/resultados y enlace al PR o al merge directo, con motivo y autorización registrados. |
+| D-13 | CI obligatorio en cada rama y merge directo; F0.2 instala `.github/workflows/ci.yml`, F1.1 verifica contenedores/Docker, F1.2 integra PostgreSQL y F7.1 E2E. Los checks requeridos bloquean la integración; suites aún no entregadas se identifican explícitamente como no ejecutadas. |
+| D-14 | Evidencia de cierre con diff/migraciones/Docker revisados, comandos/resultados y hash/evidencia del merge registrado. |
 
 Pendiente necesario antes de F4.0: aprobar el destino de archivo y los plazos concretos de retención activa y de archivo antes de implementar archivado y eliminación de audit trails.
 
-### Actualización de D-03 — 2026-11-07
+### Antecedente de integración de F0.2 — 2026-11-07
 
-Se mantiene el PR como vía preferida. Para la integración local de F0.2, no había PR en GitHub; la herramienta GitHub disponible es de consulta y el navegador mostró la pantalla de inicio de sesión, sin permitir crearlo. Además, `origin` no publica una rama `dev`. El usuario autorizó expresamente completar el merge sin PR y actualizar el flujo con esta excepción. Esta autorización no permite omitir checks ni superar una protección de rama; si la publicación está bloqueada, el estado debe quedar BLOQUEADA.
+Durante esa integración no había PR en GitHub, la herramienta disponible era de consulta y `origin` no publicaba una rama `dev`; el usuario autorizó completar el merge sin PR. Ese registro describe la autorización puntual de aquella ejecución, no la política vigente. La política actual es no abrir PR e integrar directamente mediante merges verificados. Nunca omitir checks ni superar una protección de rama; si esta impide el merge directo, el estado debe quedar BLOQUEADA.
 
 ## F0.2 — Contratos modulares y compatibilidad — 2026-11-07
 
@@ -66,3 +66,9 @@ Se mantiene el PR como vía preferida. Para la integración local de F0.2, no ha
 - Se conservan versiones fijadas; no se modifican dependencias. Comandos ejecutados ahora: `node --version` → v22.23.4; `npm --version` → 10.9.9; `git --version` → 2.49.0; `npm view nuxt@4.5.2 engines --json`, Vue 3.5.44, TypeORM 1.1.2 y pg 8.23.1. Node satisface el rango del proyecto y los `engines` publicados consultados.
 - No se ejecutaron instalación, build, base de datos ni contenedores: F0.2 produce contratos, no runtime. Docker/Compose sigue requerido por los documentos vigentes, según decisión confirmada para esta ejecución.
 - Fuentes oficiales: Nuxt server routes, auto-imports y composables; TypeORM transactions; PostgreSQL transactions; Vue state management (enlaces en `docs/API.md`).
+
+### Remediación de auditoría de dependencias — 2026-11-07
+
+- `npm ci` reportó inicialmente 26 vulnerabilidades: 2 bajas y 24 moderadas. Se actualizaron Nuxt a `4.6.4` y ESLint a `10.14.0`, versiones compatibles con Node 22.23.4, y se fijaron overrides para `glob@14.0.2` y `minimatch@11.0.1`. Los checks lint, typecheck Nuxt y build pasan.
+- La auditoría final reporta 7 bajas, 0 moderadas/altas/críticas. Los advisories remanentes de Nuxt ofrecen solo Nuxt `4.1.3` como fix, que es anterior a `4.6.2`, versión que corrige advisories previos de route rules y `useHeadSafe`; no se acepta esa degradación. `deepmerge@4.3.1` sigue afectado por GHSA-gcqx-w48m-w2h4 y es la última versión publicada en npm; no hay versión corregida disponible.
+- No se ejecutó `npm audit fix --force` ni se ocultaron findings. Revalidar los avisos remanentes cuando Nuxt o deepmerge publiquen una solución compatible.

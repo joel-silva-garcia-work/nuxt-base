@@ -5,7 +5,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Subfase inicial si proyecto nuevo: F0.1.
 - Última verificada histórica: F2.3; fases F1 y F2 figuran CERRADAS (2026-10-29). Ese historial no está en el workspace adoptado.
 - Rama/commit/merge históricos declarados: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. No se recrearon esas ramas o commits.
-- Estado vigente (2026-11-07): F0.2 quedó integrada en `dev` mediante merge `--no-ff` `80d314e`; los checks locales y CI remoto en el merge pasan y `dev` está protegida. F1.1 está verificada en `change/f1.1-scaffold-containers`; F1.2 está verificada en `change/f1.2-postgres-containers`, commit `03c608d`, con CI aprobada en run `42409564126`. F1.3 está EN_CURSO: la revisión de seguridad detectó la publicación PostgreSQL en todas las interfaces; el fix loopback está en `change/f1.3-integration-fix`, con validación local pasada, pero CI remoto y merges en `dev` siguen pendientes. La evidencia histórica de otras líneas no sustituye esta integración.
+- Estado vigente (2026-11-07): F0.2 quedó integrada en `dev` mediante merge `--no-ff` `80d314e`. F1 está CERRADA en la línea local: F1.1 y F1.2 verificadas; F1.3 integrada en `dev` en los merges `8fc0084`, `aaa0974` y `964ec3d`, con checks locales y CI remoto posterior aprobados (run `42414200647`). Se conserva separada la evidencia histórica de otros workspaces.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
@@ -18,7 +18,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 | F0.2 | Diseño modular y contratos | VERIFICADA (histórico 2026-10-29 y adopción local 2026-11-07) |
 | F1.1 | Scaffold y contenedores | VERIFICADA (histórico 2026-10-29 y adopción local 2026-11-07) |
 | F1.2 | PostgreSQL en contenedor | VERIFICADA en la línea local (f431906; CI 42408841230) |
-| F1.3 | Integración y cierre | EN_CURSO; fix local, CI y merges pendientes |
+| F1.3 | Integración y cierre | VERIFICADA; F1 CERRADA en la línea local (dev@964ec3d) |
 | F2.1 | Módulos y persistencia | VERIFICADA |
 | F2.2 | Migraciones y arnés DB | VERIFICADA |
 | F2.3 | Integración y cierre | VERIFICADA |
@@ -57,7 +57,8 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 ## Integración
 | Fase | Rama | Estado | Base | Merge | Checks dev |
 |---|---|---|---|---|---|
-| F1 | phase/f1-setup | CERRADA | dev@a7176fd | dc75b13 | OK: lint, typecheck, build, db:check, preview |
+| F1 (histórico) | phase/f1-setup | CERRADA | dev@a7176fd | dc75b13 | OK: lint, typecheck, build, db:check, preview |
+| F1 (línea local) | change/f1.1 → f1.2 → f1.3 | CERRADA | dev@80d314e | 8fc0084, aaa0974, 964ec3d | OK: lint, typecheck, unit 6, build, PostgreSQL integration, Compose, smoke |
 | F2 | phase/f2-persistence | CERRADA | dev@841efb6 | 104be11 | OK: lint, typecheck, unit 26, integración 36, build, db:check, sin deriva, preview |
 | F3 | phase/f3-auth-rbac | PENDIENTE | — | — | Pendientes |
 | F4 | phase/f4-backend-crud | PENDIENTE | — | — | Pendientes |
@@ -250,6 +251,17 @@ Cada fila: CUMPLE / NO CUMPLE / NO APLICA justificado, evidencia y método (auto
 - Checks posteriores EN dev: lint rc 0, typecheck rc 0, build limpio (`.output` borrado antes) rc 0, db:check rc 0 (desarrollo y pruebas OK), preview `GET /` 200 (proceso detenido, sin puertos abiertos), fronteras app→server 0. Sin conflictos que alteren la arquitectura.
 - Ancestría y árbol limpio: se verifican después del commit documental (`git merge-base --is-ancestor phase/f1-setup dev`); el resultado se informa en la respuesta, porque este commit no puede contener su propio hash.
 - Estado de fase y bloqueos: F1 CERRADA. Sin bloqueos. Seguridad aplicada: `.env` con permisos 600, a recomendación aceptada por el usuario.
+
+## Evidencia de integración F1 — línea local adoptada — 2026-11-07
+- Base `dev@80d314e`; ramas verificadas y ordenadas por dependencia: `change/f1.1-scaffold-containers` (`463c5b2`), `change/f1.2-postgres-containers` (`03c608d`) y fix de integración `change/f1.3-integration-fix` (`5c1c535`).
+- Merge directo `--no-ff`, sin PR ni conflictos: F1.1 → `8fc0084`; F1.2 → `aaa0974`; fix de seguridad → `964ec3d`. No se detectaron marcadores; las tres ramas son ancestros de `dev`.
+- Checks previos: F1.1 CI run 42402460345 SUCCESS; F1.2 CI run 42409564126 SUCCESS; fix CI run 42412569587 SUCCESS.
+- Revisión de seguridad: hallazgo MEDIUM sobre el bind PostgreSQL en todas las interfaces, corregido con `POSTGRES_HOST_BIND_ADDRESS=127.0.0.1` por defecto. Acceso por otra interfaz requiere override explícito. CI comprueba la dirección resuelta.
+- Checks posteriores locales en `dev`: `npm run lint`, `npm run typecheck`, `npm run test:unit` (6/6), `npm run build`, Compose config/bind y `git diff --check`: OK.
+- CI posterior en `dev`: run 42414200647 SUCCESS en calidad/build, PostgreSQL integration (`db:check` y test real) y Docker/Compose (bind loopback, arranque, aprovisionamiento, conexiones, integración y smoke HTTP).
+- Arquitectura F1: F1.1 es scaffold sin lógica de dominio (criterios 1–5 y 7 NO APLICA; checks/prueba negativa CUMPLE). F1.2 no modifica UI/endpoints/consultas de aplicación (criterios 1–2 y 7 NO APLICA); configuración/scripts aislados y tipados, secretos omitidos de errores, integración real y pruebas unitarias CUMPLEN criterios 3–6. Cambios del fix son configuración Compose/docs/CI, sin cambios de lógica de negocio.
+- No se pudo repetir PostgreSQL localmente: descarga de `postgres:17-alpine` excedió cuatro minutos y se detuvo; no quedaron contenedores/volúmenes. La ejecución real quedó validada por CI remoto antes y después de integrar.
+- Resultado: F1.1, F1.2 y F1.3 VERIFICADAS; F1 CERRADA. `dev` en `964ec3d` quedó limpio y con las ramas integradas en su ancestría.
 
 ## Evidencia de integración F2 (F2.3)
 - Fase/unidad/rama/base/final de implementación: F2 / F2.3 / `phase/f2-persistence` / base dev@841efb6 / final 59d9e9b (F2.1 f3a50d2 y F2.2 59d9e9b, ambas VERIFICADAS).

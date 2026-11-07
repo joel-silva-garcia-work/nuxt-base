@@ -199,7 +199,8 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Revisión de seguridad obligatoria: sin hallazgos; incluye revisión acotada de selección de destino de DB, cierre Nitro y límites del pool.
 - Integración: `npm run test:integration` no pudo ejecutarse. No hay `.env` ni variables `DB_*`/`TEST_DB_*`; el arranque falla en el setup antes de las pruebas, sin acceder a bases. `pg_isready` solo confirmó que un servidor local acepta conexiones; no se intentó autenticar ni modificarlo. No hay CI remota porque publicar requiere autorización.
 - Puerta arquitectónica: criterios 1–2 NO APLICA (sin Vue). Criterios 3–5 CUMPLE en los contratos/base implementados; sin handlers/casos de uso adelantados. Criterio 6 PARCIAL (unitarias ejecutadas; integración real pendiente). Criterio 7 CUMPLE en configuración: pool acotado y estado de solicitud no global.
-- Estado/siguiente paso: sin merge; solicitar/configurar la base de pruebas dedicada y ejecutar integración; después decidir publicación CI si sigue siendo necesaria. El registro del commit de implementación se añadirá una vez creado.
+- Commit de implementación: `2654c98` (`feat(F2.1/persistence): implementar módulos y persistencia`).
+- Estado/siguiente paso: sin merge; solicitar/configurar la base de pruebas dedicada y ejecutar integración; después decidir publicación CI si sigue siendo necesaria.
 
 ## Evidencias F2.2
 - ID / fecha real / estado: F2.2 / 2026-10-29 / VERIFICADA.

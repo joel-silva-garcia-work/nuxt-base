@@ -99,3 +99,11 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - Checks locales en `dev`: lint, typecheck, 6 unitarias, build Nuxt, YAML, Compose config/bind y diff check pasan. La descarga local de PostgreSQL no concluyó; conexiones y tests reales se validaron en CI.
 - CI post-merge en `dev`: run 42414200647 SUCCESS en los tres jobs: calidad/build, PostgreSQL service, y Docker/Compose con health, aprovisionamiento, conexiones reales desde app/tests y smoke HTTP.
 - Resultado: ramas F1.1/F1.2/fix son ancestros de `dev`; árbol limpio en `964ec3d`. F1.3 VERIFICADA y fase F1 CERRADA.
+
+## F2.1 — Módulos y persistencia — 2026-11-07
+
+- Los módulos poseen sus `EntitySchema` privados y exportan únicamente registros/puertos de aplicación desde su `index.ts`. La composición registra una vez las entidades de users, roles, permissions, auth y audit; las relaciones crean los metadatos de `user_roles` y `role_permissions`, sin una entidad de unión pública.
+- El token `Tx` es opaco para aplicación y dominio. `PostgresTransactionRunner` asocia el token con el `EntityManager` transaccional, comparte ese manager entre repositorios y lo invalida al resolver o rechazar el callback.
+- La raíz de composición crea un único DataSource por proceso y rechaza seleccionar después el otro destino. CLI y Nitro usan las mismas entidades y configuración; `synchronize` y `migrationsRun` son siempre `false`. Nitro registra el cierre del pool sin conectarse durante el arranque, porque el aprovisionamiento de bases/roles es explícito y posterior al inicio de Compose.
+- Los pools son acotados mediante `DB_POOL_MAX` y `TEST_DB_POOL_MAX` (por defecto 10); `.env.example` usa un máximo menor para pruebas. Los secretos de usuario y sesión tienen `select: false`, y el registro de usuario no contiene `passwordHash`.
+- Las migraciones y su ciclo de vida pertenecen a F2.2. Esta unidad registra metadata y contratos; no altera ni crea tablas.

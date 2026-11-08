@@ -1,5 +1,5 @@
 import { Client } from 'pg'
-import { loadDatabaseConfigs } from '../../../server/platform/config/database'
+import { loadDatabaseConfigs } from '../../../server/platform/config/database.ts'
 
 export async function setup(): Promise<void> {
   const { test } = loadDatabaseConfigs()

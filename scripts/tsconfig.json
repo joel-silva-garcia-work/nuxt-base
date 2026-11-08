@@ -12,6 +12,10 @@
   },
   "include": [
     "./**/*.ts",
-    "../server/platform/config/**/*.ts"
+    "../server/**/*.ts",
+    "../tests/**/*.ts"
+  ],
+  "exclude": [
+    "../server/plugins/**/*.ts"
   ]
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { loadDatabaseConfigs, parseDatabaseConfig } from '../../server/platform/config/database'
+import { loadDatabaseConfigs, parseDatabaseConfig } from '../../server/platform/config/database.ts'
 
 const validEnvironment = {
   DB_HOST: 'postgres',
@@ -23,6 +23,21 @@ describe('database configuration', () => {
     expect(configs.development.database).toBe('nuxt_base')
     expect(configs.test.database).toBe('nuxt_base_test')
     expect(configs.development.ssl).toBe(false)
+    expect(configs.development.poolMax).toBe(10)
+    expect(configs.test.poolMax).toBe(10)
+  })
+
+  it('accepts a bounded connection pool size', () => {
+    const config = parseDatabaseConfig({
+      ...validEnvironment,
+      DB_POOL_MAX: '4',
+    }, 'DB')
+
+    expect(config.poolMax).toBe(4)
+    expect(() => parseDatabaseConfig({
+      ...validEnvironment,
+      DB_POOL_MAX: '101',
+    }, 'DB')).toThrow('DB_POOL_MAX')
   })
 
   it('rejects equal development and test database names', () => {

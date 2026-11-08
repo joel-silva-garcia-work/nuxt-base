@@ -11,6 +11,7 @@ const environmentSchema = z.object({
   user: databaseUser,
   password: z.string().min(1).refine(value => !/[\r\n]/.test(value)),
   ssl: sslMode,
+  poolMax: z.coerce.number().int().min(1).max(100),
 })
 
 export interface DatabaseConfig {
@@ -20,6 +21,7 @@ export interface DatabaseConfig {
   readonly user: string
   readonly password: string
   readonly ssl: false | { readonly rejectUnauthorized: true }
+  readonly poolMax: number
 }
 
 export interface DatabaseConfigs {
@@ -38,6 +40,7 @@ const environmentFieldNames: Readonly<Record<string, string>> = {
   user: 'USER',
   password: 'PASSWORD',
   ssl: 'SSL',
+  poolMax: 'POOL_MAX',
 }
 
 export function parseDatabaseConfig(
@@ -51,6 +54,7 @@ export function parseDatabaseConfig(
     user: environment[`${prefix}_USER`],
     password: environment[`${prefix}_PASSWORD`],
     ssl: environment[`${prefix}_SSL`],
+    poolMax: environment[`${prefix}_POOL_MAX`] ?? '10',
   })
 
   if (!parsed.success) {
@@ -75,6 +79,7 @@ export function parseDatabaseConfig(
     user: parsed.data.user,
     password: parsed.data.password,
     ssl: parsed.data.ssl === 'require' ? { rejectUnauthorized: true } : false,
+    poolMax: parsed.data.poolMax,
   }
 }
 

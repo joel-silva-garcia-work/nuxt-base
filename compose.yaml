@@ -47,12 +47,14 @@ services:
       DB_USER: ${DB_USER:?Set DB_USER in .env}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       DB_SSL: ${DB_SSL:-disable}
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
       TEST_DB_HOST: ${TEST_DB_HOST:-postgres}
       TEST_DB_PORT: ${TEST_DB_PORT:-5432}
       TEST_DB_NAME: ${TEST_DB_NAME:?Set TEST_DB_NAME in .env}
       TEST_DB_USER: ${TEST_DB_USER:?Set TEST_DB_USER in .env}
       TEST_DB_PASSWORD: ${TEST_DB_PASSWORD:?Set TEST_DB_PASSWORD in .env}
       TEST_DB_SSL: ${TEST_DB_SSL:-disable}
+      TEST_DB_POOL_MAX: ${TEST_DB_POOL_MAX:-5}
     volumes:
       - .:/app
       - node_modules:/app/node_modules
@@ -85,12 +87,14 @@ services:
       DB_USER: ${DB_USER:?Set DB_USER in .env}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       DB_SSL: ${DB_SSL:-disable}
+      DB_POOL_MAX: ${DB_POOL_MAX:-10}
       TEST_DB_HOST: ${TEST_DB_HOST:-postgres}
       TEST_DB_PORT: ${TEST_DB_PORT:-5432}
       TEST_DB_NAME: ${TEST_DB_NAME:?Set TEST_DB_NAME in .env}
       TEST_DB_USER: ${TEST_DB_USER:?Set TEST_DB_USER in .env}
       TEST_DB_PASSWORD: ${TEST_DB_PASSWORD:?Set TEST_DB_PASSWORD in .env}
       TEST_DB_SSL: ${TEST_DB_SSL:-disable}
+      TEST_DB_POOL_MAX: ${TEST_DB_POOL_MAX:-5}
     volumes:
       - .:/app
       - node_modules:/app/node_modules

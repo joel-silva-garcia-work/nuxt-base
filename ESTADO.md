@@ -6,6 +6,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Última verificada histórica: F2.3; fases F1 y F2 figuran CERRADAS (2026-10-29). Ese historial no está en el workspace adoptado.
 - Rama/commit/merge históricos declarados: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. No se recrearon esas ramas o commits.
 - Estado vigente (2026-11-07): F0.2 quedó integrada en `dev` mediante merge `--no-ff` `80d314e`. F1 está CERRADA en la línea local: F1.1 y F1.2 verificadas; F1.3 integrada en `dev` en los merges `8fc0084`, `aaa0974` y `964ec3d`, con checks locales y CI remoto posterior aprobados (run `42414200647`). Se conserva separada la evidencia histórica de otros workspaces.
+- Adopción local F2.1 (2026-11-07): implementada y VERIFICADA en `change/f2.1-modules-persistence`; CI run 42424991919 aprobó calidad/build, integración PostgreSQL y Docker/Compose. La rama sigue sin merge; F2.2/F2.3 históricas no acreditan esta nueva línea.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
@@ -19,9 +20,9 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 | F1.1 | Scaffold y contenedores | VERIFICADA (histórico 2026-10-29 y adopción local 2026-11-07) |
 | F1.2 | PostgreSQL en contenedor | VERIFICADA en la línea local (f431906; CI 42408841230) |
 | F1.3 | Integración y cierre | VERIFICADA; F1 CERRADA en la línea local (dev@964ec3d) |
-| F2.1 | Módulos y persistencia | VERIFICADA |
-| F2.2 | Migraciones y arnés DB | VERIFICADA |
-| F2.3 | Integración y cierre | VERIFICADA |
+| F2.1 | Módulos y persistencia | VERIFICADA en `change/f2.1-modules-persistence` (CI 42424991919); sin merge |
+| F2.2 | Migraciones y arnés DB | PENDIENTE en la línea local (solo evidencia histórica de otro workspace) |
+| F2.3 | Integración y cierre | PENDIENTE en la línea local (solo evidencia histórica de otro workspace) |
 | F3.0 | Infraestructura base de audit trail | PENDIENTE |
 | F3.1 | Catálogo y wrapper | PENDIENTE |
 | F3.2 | Sync y bootstrap | PENDIENTE |
@@ -189,6 +190,18 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
   - Criterio 5: CUMPLE. Tx compartida probada; `passwordHash` fuera de UserRecord y con `select:false`.
   - Criterio 6: CUMPLE. Pruebas unitarias y de integración de transacción y DataSource. Las de repositorios con tablas llegan en F2.2.
   - Criterio 7: CUMPLE. Paginación acotada en todos los repositorios (`toOffsetLimit`, máximo 100), roles por lote sin N+1, pool limitado y estado de sesión y rate limit en PostgreSQL.
+
+## Adopción local de F2.1 — 2026-11-07
+- ID / estado: F2.1 / VERIFICADA en la rama; pendiente de integración en F2.3.
+- Base comprobada: `dev` limpio en `8a66e37`; rama de tarea `change/f2.1-modules-persistence`. No se integró ni publicó la rama.
+- Implementación: contratos `Tx`/`TransactionRunner` y paginación; schemas TypeORM privados para users, roles, permissions, sesiones, rate limit y audit; composición de DataSource por proceso para CLI/runtime; `synchronize=false`, `migrationsRun=false`, pool limitado y apagado de Nitro. Se añadieron el adaptador de lectura de users y pruebas para contratos/metadata.
+- Verificaciones aprobadas localmente: `npm run lint`; `npm run typecheck` (Nuxt, servidor, scripts y tests); `npm run test:unit` (11/11); `npm run build`; `docker compose ... config --quiet` con valores ficticios solo para interpolación. Build público sin referencias a TypeORM, `pg`, `pg-pool` ni `password_hash`. No se modificaron ni generaron migraciones.
+- Revisión de seguridad obligatoria: sin hallazgos; incluye revisión acotada de selección de destino de DB, cierre Nitro y límites del pool.
+- Integración local: no se configuró `.env` ni variables `DB_*`/`TEST_DB_*`; no se intentó autenticar ni modificar el PostgreSQL local. Integración real aprobada en CI con la base de pruebas dedicada.
+- CI remota: primer run 42424127110 falló únicamente por una aserción que contaba 6 entidades explícitas y omitía los 2 metadatos de tablas de unión; corregido en `6ba4146`. Run 42424991919 en `6ba41461fbeeaf63366ca91f6661962bb699664a`: SUCCESS en los tres jobs (calidad/typecheck/unit/build; PostgreSQL con prueba de metadata, transacción compartida y rollback; Docker/Compose incluyendo integración y smoke test).
+- Puerta arquitectónica: criterios 1–2 NO APLICA (sin Vue). Criterios 3–5 CUMPLE en los contratos/base implementados; sin handlers/casos de uso adelantados. Criterio 6 CUMPLE (unitarias locales e integración PostgreSQL en CI). Criterio 7 CUMPLE en configuración: pool acotado y estado de solicitud no global.
+- Commits: `2654c98` (implementación), `731cd5c` (evidencia/bloqueo inicial) y `6ba4146` (corrección de aserción de metadata y tablas de unión). La rama publicada recibió autorización explícita para ejecutar CI.
+- Estado/siguiente paso: F2.1 VERIFICADA. Sin merge; integrar junto con las ramas F2.2 en F2.3. Árbol limpio comprobado en `6ba4146`.
 
 ## Evidencias F2.2
 - ID / fecha real / estado: F2.2 / 2026-10-29 / VERIFICADA.

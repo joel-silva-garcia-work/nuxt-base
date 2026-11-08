@@ -122,6 +122,9 @@ Verificador futuro (F3.1): comparar en ambas direcciones rutas descubiertas y ca
 - Los repositorios reciben un `Tx` opaco. La infraestructura asocia el token al `EntityManager` de la transacción y lo invalida al terminar el callback; no se permite consultar el manager global para operaciones de repositorio.
 - `UserRecord` nunca contiene `passwordHash`; la entidad lo excluye de las consultas predeterminadas. El hash de sesión también se excluye por defecto y permanece en el adaptador de auth.
 - Registrar metadata no crea tablas: `synchronize` y `migrationsRun` permanecen desactivados. La creación y reversión del esquema se entrega en F2.2.
+- F2.2 registra la migración inicial en la raíz de composición y en el DataSource CLI. El arnés aplica/revierte/reaplica tablas por migración; no elimina esquemas completos ni ejecuta limpieza implícita al iniciar.
+- La suite de integración destructiva exige `TEST_DB_ALLOW_SCHEMA_RESET=true`, una base llamada `*_test` separada de `DB_NAME`, el rol `TEST_DB_USER` separado y no superusuario, y coincidencia de `current_database()`/`current_user` con configuración. Antes de revertir comprueba que las tablas públicas pertenezcan al esquema administrado; `NODE_ENV=test` por sí solo no habilita reset.
+- La unicidad de email aplica solo a usuarios no borrados lógicamente y el esquema rechaza emails no normalizados; permisos preservan unicidad de clave y método+ruta. Las FK limpian relaciones al borrar usuarios/roles y restringen borrar permisos asignados.
 
 ## 9. Pruebas y verificaciones F0.2
 

@@ -81,6 +81,7 @@ jobs:
       TEST_DB_USER: nuxt_base_test_app
       TEST_DB_PASSWORD: ci-only-test-password
       TEST_DB_SSL: disable
+      TEST_DB_ALLOW_SCHEMA_RESET: "true"
     steps:
       - name: Check out source
         uses: actions/checkout@v5
@@ -115,6 +116,7 @@ jobs:
       DB_USER: nuxt_base_app
       TEST_DB_NAME: nuxt_base_test
       TEST_DB_USER: nuxt_base_test_app
+      TEST_DB_ALLOW_SCHEMA_RESET: "true"
     steps:
       - name: Check out source
         uses: actions/checkout@v5

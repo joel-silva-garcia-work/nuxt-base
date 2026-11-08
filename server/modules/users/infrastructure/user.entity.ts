@@ -16,8 +16,13 @@ export const UserEntitySchema = new EntitySchema<UserEntity>({
   name: 'User',
   tableName: 'users',
   columns: {
-    id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
-    email: { type: 'varchar', length: 320, unique: true },
+    id: {
+      type: 'uuid',
+      primary: true,
+      primaryKeyConstraintName: 'pk_users',
+      generated: 'uuid',
+    },
+    email: { type: 'varchar', length: 320 },
     name: { type: 'varchar', length: 160 },
     passwordHash: { name: 'password_hash', type: 'varchar', length: 255, select: false },
     isActive: { name: 'is_active', type: 'boolean', default: true },
@@ -30,6 +35,7 @@ export const UserEntitySchema = new EntitySchema<UserEntity>({
       type: 'many-to-many',
       target: 'Role',
       inverseSide: 'users',
+      onUpdate: 'CASCADE',
       joinTable: {
         name: 'user_roles',
         joinColumn: { name: 'user_id', referencedColumnName: 'id', foreignKeyConstraintName: 'fk_user_roles_user' },
@@ -37,4 +43,15 @@ export const UserEntitySchema = new EntitySchema<UserEntity>({
       },
     },
   },
+  checks: [
+    { name: 'ck_users_email_normalized', expression: 'email = lower(email)' },
+  ],
+  indices: [
+    {
+      name: 'uq_users_email_active',
+      columns: ['email'],
+      unique: true,
+      where: '"deleted_at" IS NULL',
+    },
+  ],
 })

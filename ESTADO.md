@@ -10,6 +10,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Adopción local F2.2 (2026-11-08): VERIFICADA en `change/f2.2-migrations-db-harness` sobre F2.1; CI run 42433897297 aprobó calidad/build, integración PostgreSQL y Docker/Compose. Se integró en F2.3 (merge `2ac7a33`).
 - Cierre local F2.3 (2026-11-08): F2.1, F2.2 y la corrección de integración se fusionaron directamente `--no-ff` en `dev`; CI post-merge 42439071311 aprobó los tres jobs. F2 CERRADA en `dev`; sin PR.
 - F3.0 (2026-11-07): VERIFICADA en `change/f3.0-audit-trail` desde `dev@ac3fb35`, commit `d45d3b8`; sin publicar ni integrar. La tabla base de auditoría ya existe por F2.2; se añadieron servicio transaccional, sanitización y migración aditiva.
+- F3.1 (2026-11-08): VERIFICADA en `change/f3.1-catalog-wrapper`, basada en la rama verificada F3.0 (`9183655`); commit local registrado en la evidencia inferior. No publicada ni integrada.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
@@ -27,7 +28,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 | F2.2 | Migraciones y arnés DB | VERIFICADA e integrada en `dev` (merge `2ac7a33`) |
 | F2.3 | Integración y cierre | VERIFICADA; F2 CERRADA en `dev` (merge `0cca960`, CI `42439071311`) |
 | F3.0 | Infraestructura base de audit trail | VERIFICADA |
-| F3.1 | Catálogo y wrapper | PENDIENTE |
+| F3.1 | Catálogo y wrapper | VERIFICADA en rama |
 | F3.2 | Sync y bootstrap | PENDIENTE |
 | F3.3 | Sesiones y login | PENDIENTE |
 | F3.4 | Logout y contraseña | PENDIENTE |
@@ -263,7 +264,24 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Revisión de seguridad: sin hallazgos.
 - Puerta arquitectónica: UI/composables NO APLICA; caso de uso y adaptador de persistencia CUMPLEN; API pública interna y dependencias explícitas CUMPLEN; transacción compartida/rollback CUMPLEN; pruebas unitarias e integración PostgreSQL CUMPLEN; contexto por llamada sin estado mutable compartido CUMPLE.
 - Commit de implementación: `d45d3b8` (`feat(F3.0/audit): implementar audit trail transaccional`).
-- Bloqueos y próxima acción: ninguna para F3.0. Detenerse sin merge de fase; siguiente unidad F3.1 después de integrar F3.0 según el flujo Git.
+- Bloqueos y próxima acción: ninguna para F3.0. Detenerse sin merge de fase; F3.1 parte en una rama propia desde esta dependencia verificada mientras F3.0 no está integrada.
+
+## Evidencias F3.1
+- ID / fecha real / estado: F3.1 / 2026-11-08 / VERIFICADA en rama; sin publicar ni integrar.
+- Dependencias y base Git comprobadas: F3.0 VERIFICADA en `change/f3.0-audit-trail`; rama propia `change/f3.1-catalog-wrapper` basada en `9183655`.
+- Entregables: `server/http/catalog.ts` (22 claves con políticas y estado de implementación), `server/http/endpoint.ts` y `server/http/nuxt-endpoint.ts` (wrapper/adaptador común), `server/http/errors.ts` (errores uniformes), `scripts/verify-architecture.ts` y `npm run verify:architecture`; pruebas unitarias en `tests/unit/http-api.test.ts`. `docs/API.md` y `docs/DECISIONES.md` registran el contrato.
+- Criterios específicos: catálogo completo, duplicados/faltantes, rutas activas sin registro/wrapper, métodos y patrones exactos, cobertura Nitro TS/JS, RBAC provisional siempre 403; sin autorización por prefijo.
+- Comandos / resultados: `npm run lint` OK; `npm run typecheck` OK; `npm run test:unit` 34/34 OK; `npm run build` OK; `npm run verify:architecture` OK (22 entradas, rutas actualmente pendientes, fronteras sin ciclos); `git diff --check` OK. No se ejecutó integración PostgreSQL: esta unidad no toca persistencia. No se publicó la rama ni se ejecutó CI remoto.
+- Revisión de seguridad: hallazgo MEDIUM por omitir extensiones Nitro JavaScript, corregido con descubrimiento de extensiones TS/JS, fallo explícito ante archivos desconocidos y prueba de regresión; ver tabla de hallazgos en la respuesta.
+- Puerta arquitectónica:
+  - UI, componentes, composables y cliente API: NO APLICA; no se modificó frontend.
+  - Handlers/casos de uso: NO APLICA; aún no hay rutas de negocio. El wrapper valida frontera, método, patrón y política antes de invocar el controlador.
+  - Fronteras/dependencias: CUMPLE; verificador estático de imports, direcciones modulares y ciclos.
+  - Persistencia/transacciones/DTO: NO APLICA; no se consulta ni modifica estado. Errores HTTP sí usan forma tipada uniforme.
+  - Pruebas: CUMPLE; suite unitaria y build ejecutados.
+  - SSR/multi-proceso: CUMPLE; el contexto de request es por evento, sin singleton mutable ni almacenamiento local.
+- Commit de implementación: `040ad8a` (`feat(F3.1/catalog): añadir wrapper y verificador de rutas`).
+- Bloqueos y próxima acción: ninguno para F3.1; detenerse sin merge. Próxima unidad: F3.2.
 
 ## Evidencias por subfase — plantilla
 - ID / fecha real / estado:

@@ -91,7 +91,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
   - Dependencias acíclicas: OK, con un script de grafo sobre la tabla de API.md (9 módulos, 24 aristas, 0 ciclos; los 4 puertos respetan la dirección).
   - Catálogo frente a la API mínima del PLAN: OK (21/21 con la política correcta; la única entrada extra es `GET /api/auth/csrf`, el auxiliar CSRF que el PLAN permite).
   - Contratos de componente y caso de uso, descubrimiento de rutas y estrategia de fronteras: definidos (secciones 8–11).
-- Comandos / resultados / código de salida: `node verify-f02.mjs docs/API.md PLAN.md` → RESULT OK, exit 0. Prueba negativa (ciclo y ruta duplicados inyectados en una copia) → 7 fallos, exit 1. El script vive en el scratchpad de la sesión y no se versiona; desde F3.1 lo sustituyen dependency-cruiser y `verify:catalog`.
+- Comandos / resultados / código de salida: `node verify-f02.mjs docs/API.md PLAN.md` → RESULT OK, exit 0. Prueba negativa (ciclo y ruta duplicados inyectados en una copia) → 7 fallos, exit 1. El script vive en el scratchpad de la sesión y no se versiona; el verificador versionado de catálogo y fronteras entregado en F3.1 es `npm run verify:architecture`.
 - Supuestos para validar después: hook de Nitro (F3.1), concurrencia del último admin (F4.4), coste de 4 consultas por petición RBAC (F3.5).
 - Commit: no aplica (F0 precede a Git).
 - Bloqueos y próxima acción: ninguno. Siguiente: F1.1.
@@ -190,7 +190,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Puerta arquitectónica:
   - Criterios 1–2: NO APLICA (sin cambios Vue).
   - Criterio 3: CUMPLE. Aún no hay handlers; los repositorios no conocen HTTP y son por Tx.
-  - Criterio 4: CUMPLE. Dependencias explícitas y sin ciclos; cada módulo expone su index; las FK entre módulos se declaran por nombre de entidad, sin imports (grep y script; dependency-cruiser desde F3.1).
+  - Criterio 4: CUMPLE. Dependencias explícitas y sin ciclos; cada módulo expone su index; las FK entre módulos se declaran por nombre de entidad, sin imports (revisión y script de grafo; el verificador estático se incorporó en F3.1).
   - Criterio 5: CUMPLE. Tx compartida probada; `passwordHash` fuera de UserRecord y con `select:false`.
   - Criterio 6: CUMPLE. Pruebas unitarias y de integración de transacción y DataSource. Las de repositorios con tablas llegan en F2.2.
   - Criterio 7: CUMPLE. Paginación acotada en todos los repositorios (`toOffsetLimit`, máximo 100), roles por lote sin N+1, pool limitado y estado de sesión y rate limit en PostgreSQL.
@@ -308,7 +308,7 @@ Cada fila: CUMPLE / NO CUMPLE / NO APLICA justificado, evidencia y método (auto
 ## Evidencia de integración F1 (F1.3)
 - Fase/unidad/rama/base/final de implementación: F1 / F1.3 / `phase/f1-setup` / base dev@a7176fd / final 57bde1e (F1.1 507d963 y F1.2 57bde1e, ambas VERIFICADAS).
 - Checks previos (en phase/f1-setup): árbol limpio; sin MERGE_HEAD, rebase, stash ni remotos. Lint rc 0, typecheck (nuxt y scripts) rc 0, build rc 0, db:check rc 0 en las dos bases, preview `GET /` 200, `npm ls --all` sin inválidos ni ausentes.
-- Arquitectura previa: app/ no importa server/, pg ni typeorm (0 coincidencias); server/platform no importa nuxt, h3, `#*` ni módulos; no existe server/utils; no hay handlers todavía. Revisión con grep y manual (las reglas de dependency-cruiser llegan en F3.1).
+- Arquitectura previa: app/ no importa server/, pg ni typeorm (0 coincidencias); server/platform no importa nuxt, h3, `#*` ni módulos; no existe server/utils; no hay handlers todavía. Revisión manual en F1.3; el verificador estático versionado se incorporó en F3.1.
 - Merge: `git switch dev` y `git merge --no-ff phase/f1-setup` → dc75b13. El primer intento falló con rc 129 (`-F -` no está soportado por `git merge`) sin modificar nada; se repitió con `-m`. Sin conflictos: dev era ancestro de la rama. 0 archivos sin resolver y 0 marcadores de conflicto.
 - Commits fix: ninguno.
 - Checks posteriores EN dev: lint rc 0, typecheck rc 0, build limpio (`.output` borrado antes) rc 0, db:check rc 0 (desarrollo y pruebas OK), preview `GET /` 200 (proceso detenido, sin puertos abiertos), fronteras app→server 0. Sin conflictos que alteren la arquitectura.
@@ -333,7 +333,7 @@ Cada fila: CUMPLE / NO CUMPLE / NO APLICA justificado, evidencia y método (auto
   - Bundles: cliente sin typeorm, pg ni password_hash; servidor sin migraciones y con pg incluido.
   - Base de datos: db:check rc 0; `migration:show` con InitialSchema aplicada; `--check` sin cambios.
   - Arranque: preview `GET /` 200 y sin puertos abiertos.
-- Arquitectura previa (grep, sin dependency-cruiser hasta F3.1): app/shared → server/typeorm/pg 0; platform → modules/composition 0; modules → composition/http/api 0; kernel sin imports externos; imports entre módulos que no vayan al index 0.
+- Arquitectura previa (revisión manual en F2.3): app/shared → server/typeorm/pg 0; platform → modules/composition 0; modules → composition/http/api 0; kernel sin imports externos; imports entre módulos que no vayan al index 0. El verificador automático se incorporó en F3.1.
 - Merge: `git switch dev` y `git merge --no-ff phase/f2-persistence` → 104be11. Sin conflictos, 0 archivos sin resolver y 0 marcadores.
 - Commits fix: ninguno.
 - Checks posteriores EN dev: la misma batería, con resultados idénticos. La arquitectura no cambia, porque no hubo conflictos.

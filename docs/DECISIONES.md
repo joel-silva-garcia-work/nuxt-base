@@ -136,3 +136,10 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - `TypeOrmAuditWriter` escribe con el manager de la transacción, reintenta como máximo tres veces adicionales solo para `40001`, `40P01` o `55P03`, y marca rollback-only ante fallo de auditoría para impedir commits si el error se captura aguas arriba.
 - Verificación: lint, typecheck, unitarias (21), build, Compose config y diff check aprobados; integración PostgreSQL real (3 archivos, 11 pruebas) pasó en contenedor temporal aislado con rol no superusuario. Revisión de seguridad sin hallazgos. No se publicó ni integró la rama; F3.0 queda lista en su rama y se detiene antes de F3.1.
 - Commit de implementación: `d45d3b8` (`feat(F3.0/audit): implementar audit trail transaccional`).
+
+## F3.1 — Catálogo y wrapper
+
+- `server/http/catalog.ts` registra de forma tipada las 22 operaciones del contrato con clave, módulo, método, patrón, descripción y política. `implemented` separa entradas futuras del conjunto de rutas ya activas; el verificador exige ruta y wrapper a todas las activas sin exigir endpoints de subfases posteriores.
+- `defineApiEndpoint` es el adaptador común para rutas Nuxt. Comprueba el patrón completo, no autoriza por prefijo, restringe métodos y conserva autorización al aceptar `HEAD` como `GET`; `OPTIONS` queda denegado. No se entrega un autorizador RBAC hasta F3.5: RBAC responde 403 aun si se proporciona el autorizador de sesión.
+- `ApiHttpError` y el wrapper serializan errores con request ID y sin filtrar mensaje/stack de fallos inesperados. El wrapper usa solo el request ID ya validado en el contexto del servidor o genera uno nuevo.
+- `npm run verify:architecture` comprueba catálogo completo, duplicados, rutas activas, uso del wrapper, imports entre módulos, fronteras app/server/platform y ciclos. Descubre extensiones de ruta Nitro TypeScript/JavaScript (y falla ante archivos de ruta no reconocidos), además de imports en bloques script de SFC Vue; la revisión de delgadez de handlers sigue siendo manual.

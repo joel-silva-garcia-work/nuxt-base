@@ -16,6 +16,7 @@
     "db:check": "node --env-file-if-exists=.env scripts/db-check.ts",
     "db:migrate": "node --env-file-if-exists=.env node_modules/typeorm/cli.js migration:run -d server/composition/data-source.cli.ts",
     "db:migrate:revert": "node --env-file-if-exists=.env node_modules/typeorm/cli.js migration:revert -d server/composition/data-source.cli.ts",
+    "verify:architecture": "node scripts/verify-architecture.ts",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {

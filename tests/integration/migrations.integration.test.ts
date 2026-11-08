@@ -114,6 +114,46 @@ describe('initial PostgreSQL migration', () => {
     ).toEqual([])
   })
 
+  it('finds a normalized email only among non-deleted users', async () => {
+    const deletedUserId = randomUUID()
+    const activeUserId = randomUUID()
+    const deletedOnlyUserId = randomUUID()
+    const email = `f22-${randomUUID()}@example.test`
+    const deletedOnlyEmail = `f22-${randomUUID()}@example.test`
+    const users = new TypeOrmUserRepository()
+    const runner = new PostgresTransactionRunner(dataSource)
+
+    await runner.run(async (tx) => {
+      const manager = getEntityManager(tx)
+      await manager.insert(UserEntitySchema, [
+        {
+          id: deletedUserId,
+          email,
+          name: 'Deleted user',
+          passwordHash: 'not-a-real-password-hash',
+          deletedAt: new Date(),
+        },
+        {
+          id: activeUserId,
+          email,
+          name: 'Active replacement',
+          passwordHash: 'not-a-real-password-hash',
+        },
+        {
+          id: deletedOnlyUserId,
+          email: deletedOnlyEmail,
+          name: 'Deleted only user',
+          passwordHash: 'not-a-real-password-hash',
+          deletedAt: new Date(),
+        },
+      ])
+
+      await expect(users.findByNormalizedEmail(tx, email.toUpperCase()))
+        .resolves.toMatchObject({ id: activeUserId, email })
+      await expect(users.findByNormalizedEmail(tx, deletedOnlyEmail)).resolves.toBeNull()
+    })
+  })
+
   it('enforces normalized reusable emails, unique keys, and relation foreign keys', async () => {
     const queryRunner = dataSource.createQueryRunner()
     await queryRunner.connect()

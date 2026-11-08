@@ -119,4 +119,11 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 
 - La rama `change/f2.2-migrations-db-harness`, basada en F2.1, quedó VERIFICADA en CI run 42433897297: calidad/build, integración PostgreSQL y Docker/Compose aprobados. Se corrigió deriva de metadata en PK, índices, generación UUID y acciones FK `ON UPDATE`; la prueba de integración verifica que TypeORM no proponga cambios sobre el esquema migrado.
 - Guardas de reset verificadas contra una base de pruebas aislada y rol no superusuario; integración confirma aplicar/revertir/reaplicar, constraints y rollback compartido. La revisión de seguridad no encontró vulnerabilidades.
-- Sin PR ni merge. Integrar junto con F2.1 durante F2.3, una vez verificadas las unidades requeridas.
+- La integración local posterior se registra en la sección F2.3; no se abrió PR.
+
+## F2.3 — Integración y cierre de F2 — 2026-11-08
+
+- Se integraron directamente en `dev` mediante merges `--no-ff`, sin PR ni conflictos: `change/f2.1-modules-persistence` (`e22a836`, merge `4586471`), `change/f2.2-migrations-db-harness` (`4d16dfa`, merge `2ac7a33`) y `change/f2.3-integration-fix` (`58ba7a5`, merge `0cca960`).
+- La revisión técnica encontró y corrigió el ciclo de vida obsoleto del singleton DataSource y la búsqueda por email normalizado/borrado lógico. Fix probado en CI run 42438506400. Revisión de seguridad sin hallazgos.
+- Checks locales post-merge en `dev`: lint, typecheck, 15 unitarias, build, Compose config y diff check aprobados. CI post-merge run 42439071311 aprobó los tres jobs: calidad/build, PostgreSQL integration, Docker/Compose.
+- F2.1 y F2.2 quedaron verificadas en la ancestría de `dev`; F2.3 VERIFICADA y F2 CERRADA. No se borraron ramas.

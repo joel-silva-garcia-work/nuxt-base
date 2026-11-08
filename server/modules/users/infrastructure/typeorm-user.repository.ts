@@ -16,7 +16,10 @@ export class TypeOrmUserRepository implements UserRepository {
   }
 
   async findByNormalizedEmail(tx: Tx, email: string): Promise<UserRecord | null> {
-    const user = await getEntityManager(tx).getRepository(UserEntitySchema).findOneBy({ email })
+    const user = await getEntityManager(tx).getRepository(UserEntitySchema).findOneBy({
+      email: email.toLowerCase(),
+      deletedAt: IsNull(),
+    })
     return user ? this.toRecord(user) : null
   }
 

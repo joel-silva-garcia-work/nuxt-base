@@ -58,8 +58,23 @@ export async function initializeDataSource(
 }
 
 export async function closeDataSource(): Promise<void> {
-  if (dataSource?.isInitialized) {
-    await dataSource.destroy()
+  const source = dataSource
+  if (!source) {
+    return
   }
-  initialization = undefined
+
+  try {
+    if (initialization) {
+      await initialization
+    }
+    if (source.isInitialized) {
+      await source.destroy()
+    }
+  } finally {
+    if (!source.isInitialized && dataSource === source) {
+      dataSource = undefined
+      targetInUse = undefined
+      initialization = undefined
+    }
+  }
 }

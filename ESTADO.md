@@ -9,7 +9,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Adopción local F2.1 (2026-11-07): implementada y VERIFICADA en `change/f2.1-modules-persistence`; CI run 42424991919 aprobó calidad/build, integración PostgreSQL y Docker/Compose. Se integró en F2.3 (merge `4586471`); la evidencia histórica de otros workspaces no acredita esta línea.
 - Adopción local F2.2 (2026-11-08): VERIFICADA en `change/f2.2-migrations-db-harness` sobre F2.1; CI run 42433897297 aprobó calidad/build, integración PostgreSQL y Docker/Compose. Se integró en F2.3 (merge `2ac7a33`).
 - Cierre local F2.3 (2026-11-08): F2.1, F2.2 y la corrección de integración se fusionaron directamente `--no-ff` en `dev`; CI post-merge 42439071311 aprobó los tres jobs. F2 CERRADA en `dev`; sin PR.
-- F3.0 (2026-11-07): VERIFICADA en `change/f3.0-audit-trail` desde `dev@ac3fb35`; sin publicar ni integrar. La tabla base de auditoría ya existe por F2.2; se añadieron servicio transaccional, sanitización y migración aditiva.
+- F3.0 (2026-11-07): VERIFICADA en `change/f3.0-audit-trail` desde `dev@ac3fb35`, commit `d45d3b8`; sin publicar ni integrar. La tabla base de auditoría ya existe por F2.2; se añadieron servicio transaccional, sanitización y migración aditiva.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
@@ -262,7 +262,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Comandos / resultados: `npm run lint` OK; `npm run typecheck` OK; `npm run test:unit` 21/21 OK; `npm run test:integration` 3 archivos, 11/11 OK en PostgreSQL 17 aislado, base `_test` y rol no superusuario; `npm run build` OK; `docker compose config --quiet` OK con variables de prueba efímeras; `git diff --check` OK. El contenedor temporal fue detenido/eliminado, sin volúmenes del proyecto.
 - Revisión de seguridad: sin hallazgos.
 - Puerta arquitectónica: UI/composables NO APLICA; caso de uso y adaptador de persistencia CUMPLEN; API pública interna y dependencias explícitas CUMPLEN; transacción compartida/rollback CUMPLEN; pruebas unitarias e integración PostgreSQL CUMPLEN; contexto por llamada sin estado mutable compartido CUMPLE.
-- Commit: pendiente de registrar después del commit local de la rama.
+- Commit de implementación: `d45d3b8` (`feat(F3.0/audit): implementar audit trail transaccional`).
 - Bloqueos y próxima acción: ninguna para F3.0. Detenerse sin merge de fase; siguiente unidad F3.1 después de integrar F3.0 según el flujo Git.
 
 ## Evidencias por subfase — plantilla

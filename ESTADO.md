@@ -21,7 +21,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 | F1.2 | PostgreSQL en contenedor | VERIFICADA en la línea local (f431906; CI 42408841230) |
 | F1.3 | Integración y cierre | VERIFICADA; F1 CERRADA en la línea local (dev@964ec3d) |
 | F2.1 | Módulos y persistencia | VERIFICADA en `change/f2.1-modules-persistence` (CI 42424991919); sin merge |
-| F2.2 | Migraciones y arnés DB | PENDIENTE en la línea local (solo evidencia histórica de otro workspace) |
+| F2.2 | Migraciones y arnés DB | EN CURSO en `change/f2.2-migrations-db-harness` (basada en F2.1) |
 | F2.3 | Integración y cierre | PENDIENTE en la línea local (solo evidencia histórica de otro workspace) |
 | F3.0 | Infraestructura base de audit trail | PENDIENTE |
 | F3.1 | Catálogo y wrapper | PENDIENTE |

@@ -16,12 +16,13 @@ export const SessionEntitySchema = new EntitySchema<SessionEntity>({
   columns: {
     id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
     userId: { name: 'user_id', type: 'uuid' },
-    tokenHash: { name: 'token_hash', type: 'varchar', length: 128, unique: true, select: false },
+    tokenHash: { name: 'token_hash', type: 'varchar', length: 128, select: false },
     expiresAt: { name: 'expires_at', type: 'timestamptz' },
     revokedAt: { name: 'revoked_at', type: 'timestamptz', nullable: true },
     createdAt: { name: 'created_at', type: 'timestamptz', createDate: true },
   },
   indices: [
+    { name: 'uq_sessions_token_hash', columns: ['tokenHash'], unique: true },
     { name: 'idx_sessions_user_id', columns: ['userId'] },
     { name: 'idx_sessions_expires_at', columns: ['expiresAt'] },
   ],

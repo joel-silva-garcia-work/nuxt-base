@@ -40,4 +40,22 @@ export const AuditEntryEntitySchema = new EntitySchema<AuditEntryEntity>({
     { name: 'idx_audit_entries_created_at', columns: ['createdAt'] },
     { name: 'idx_audit_entries_entity', columns: ['entity', 'entityId'] },
   ],
+  checks: [
+    {
+      name: 'ck_audit_entries_actor_type',
+      expression: `"actor_type" IN ('USER', 'SYSTEM')`,
+    },
+    {
+      name: 'ck_audit_entries_status_code',
+      expression: '"status_code" BETWEEN 100 AND 599',
+    },
+    {
+      name: 'ck_audit_entries_previous_state_object',
+      expression: "jsonb_typeof(\"previous_state\") = 'object'",
+    },
+    {
+      name: 'ck_audit_entries_current_state_object',
+      expression: "jsonb_typeof(\"current_state\") = 'object'",
+    },
+  ],
 })

@@ -1,22 +1,19 @@
-import { Client } from 'pg'
-import { loadDatabaseConfigs } from '../../../server/platform/config/database.ts'
+import { getDataSource } from '../../../server/composition/persistence.ts'
+import {
+  assertConnectedTestDatabase,
+  assertTestDatabaseResetAllowed,
+} from '../support/test-database.ts'
 
 export async function setup(): Promise<void> {
-  const { test } = loadDatabaseConfigs()
-  const client = new Client({
-    host: test.host,
-    port: test.port,
-    database: test.database,
-    user: test.user,
-    password: test.password,
-    ssl: test.ssl,
-    connectionTimeoutMillis: 5_000,
-  })
+  assertTestDatabaseResetAllowed()
+  const dataSource = getDataSource('test')
 
   try {
-    await client.connect()
-    await client.query('SELECT 1')
+    await dataSource.initialize()
+    await assertConnectedTestDatabase(dataSource)
   } finally {
-    await client.end()
+    if (dataSource.isInitialized) {
+      await dataSource.destroy()
+    }
   }
 }

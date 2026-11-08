@@ -16,4 +16,7 @@ export const RateLimitBucketEntitySchema = new EntitySchema<RateLimitBucketEntit
     requestCount: { name: 'request_count', type: 'integer', default: 0 },
     updatedAt: { name: 'updated_at', type: 'timestamptz', updateDate: true },
   },
+  checks: [
+    { name: 'ck_rate_limit_buckets_count', expression: '"request_count" >= 0' },
+  ],
 })

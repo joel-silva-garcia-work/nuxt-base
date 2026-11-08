@@ -95,6 +95,7 @@ services:
       TEST_DB_PASSWORD: ${TEST_DB_PASSWORD:?Set TEST_DB_PASSWORD in .env}
       TEST_DB_SSL: ${TEST_DB_SSL:-disable}
       TEST_DB_POOL_MAX: ${TEST_DB_POOL_MAX:-5}
+      TEST_DB_ALLOW_SCHEMA_RESET: ${TEST_DB_ALLOW_SCHEMA_RESET:-false}
     volumes:
       - .:/app
       - node_modules:/app/node_modules

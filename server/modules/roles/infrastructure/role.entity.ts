@@ -16,7 +16,7 @@ export const RoleEntitySchema = new EntitySchema<RoleEntity>({
   tableName: 'roles',
   columns: {
     id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
-    name: { type: 'varchar', length: 100, unique: true },
+    name: { type: 'varchar', length: 100 },
     description: { type: 'varchar', length: 500, nullable: true },
     isSystem: { name: 'is_system', type: 'boolean', default: false },
     createdAt: { name: 'created_at', type: 'timestamptz', createDate: true },
@@ -39,4 +39,7 @@ export const RoleEntitySchema = new EntitySchema<RoleEntity>({
       },
     },
   },
+  indices: [
+    { name: 'uq_roles_name', columns: ['name'], unique: true },
+  ],
 })

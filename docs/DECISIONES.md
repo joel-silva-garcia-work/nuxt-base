@@ -107,3 +107,10 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - La raíz de composición crea un único DataSource por proceso y rechaza seleccionar después el otro destino. CLI y Nitro usan las mismas entidades y configuración; `synchronize` y `migrationsRun` son siempre `false`. Nitro registra el cierre del pool sin conectarse durante el arranque, porque el aprovisionamiento de bases/roles es explícito y posterior al inicio de Compose.
 - Los pools son acotados mediante `DB_POOL_MAX` y `TEST_DB_POOL_MAX` (por defecto 10); `.env.example` usa un máximo menor para pruebas. Los secretos de usuario y sesión tienen `select: false`, y el registro de usuario no contiene `passwordHash`.
 - Las migraciones y su ciclo de vida pertenecen a F2.2. Esta unidad registra metadata y contratos; no altera ni crea tablas.
+
+## F2.2 — Migraciones y arnés DB — 2026-11-07
+
+- La migración inicial es el único mecanismo de creación de esquema; `synchronize=false` y `migrationsRun=false` se mantienen. El DataSource CLI y la composición runtime registran la misma migración sin autoejecutarla al iniciar Nuxt.
+- La base `TEST_DB_*` es el único destino de reset en integración. Antes de ejecutar la suite que revierte esquema se exige opt-in `TEST_DB_ALLOW_SCHEMA_RESET=true`, nombre `*_test`, base y rol distintos de desarrollo, conexión efectiva al nombre/rol configurados y rol no superusuario. Se rechazan tablas públicas no administradas y migraciones desconocidas; no se usa `NODE_ENV=test` como salvaguarda.
+- La migración crea las tablas de users, roles, permissions, asociaciones, sesiones, rate limit y audit; añade FK/índices/checks, unicidad de email activo normalizado y las reglas de borrado de relaciones. Las pruebas aplican, revierten y reaplican, comprueban restricciones, y fuerzan rollback de repositorios de users/roles/permissions mediante el mismo `Tx`.
+- En `.env.example` la autorización de reset queda desactivada. CI la activa solo para su base de pruebas descartable; la instrucción local advierte que habilitarla en un `*_test` reinicia las tablas gestionadas por la migración.

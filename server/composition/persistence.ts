@@ -1,6 +1,7 @@
 import { parseDatabaseConfig } from '../platform/config/database.ts'
 import { createPostgresDataSource } from '../platform/db/data-source.ts'
 import type { DataSource } from 'typeorm'
+import { InitialSchema1794152400000 } from '../migrations/1794152400000-InitialSchema.ts'
 import { AuditEntryEntitySchema } from '../modules/audit/infrastructure/audit-entry.entity.ts'
 import { RateLimitBucketEntitySchema } from '../modules/auth/infrastructure/rate-limit.entity.ts'
 import { SessionEntitySchema } from '../modules/auth/infrastructure/session.entity.ts'
@@ -16,6 +17,8 @@ export const persistenceEntities = [
   RateLimitBucketEntitySchema,
   AuditEntryEntitySchema,
 ]
+
+export const persistenceMigrations = [InitialSchema1794152400000]
 
 export type DatabaseTarget = 'development' | 'test'
 
@@ -33,7 +36,7 @@ export function getDataSource(target: DatabaseTarget = 'development'): DataSourc
 
   const config = parseDatabaseConfig(process.env, target === 'development' ? 'DB' : 'TEST_DB')
   targetInUse = target
-  dataSource = createPostgresDataSource(config, persistenceEntities)
+  dataSource = createPostgresDataSource(config, persistenceEntities, persistenceMigrations)
   return dataSource
 }
 

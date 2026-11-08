@@ -7,6 +7,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Rama/commit/merge históricos declarados: dev con el merge 104be11 (`--no-ff` de phase/f2-persistence: f3a50d2 F2.1 y 59d9e9b F2.2), más un commit documental posterior. No se recrearon esas ramas o commits.
 - Estado vigente (2026-11-07): F0.2 quedó integrada en `dev` mediante merge `--no-ff` `80d314e`. F1 está CERRADA en la línea local: F1.1 y F1.2 verificadas; F1.3 integrada en `dev` en los merges `8fc0084`, `aaa0974` y `964ec3d`, con checks locales y CI remoto posterior aprobados (run `42414200647`). Se conserva separada la evidencia histórica de otros workspaces.
 - Adopción local F2.1 (2026-11-07): implementada y VERIFICADA en `change/f2.1-modules-persistence`; CI run 42424991919 aprobó calidad/build, integración PostgreSQL y Docker/Compose. La rama sigue sin merge; F2.2/F2.3 históricas no acreditan esta nueva línea.
+- Adopción local F2.2 (2026-11-08): VERIFICADA en `change/f2.2-migrations-db-harness` sobre F2.1; CI run 42433897297 aprobó calidad/build, integración PostgreSQL y Docker/Compose. Rama sin PR ni merge; F2.1 y F2.2 se integran juntas en F2.3.
 - Cambios de arquitectura sobre trabajo previo: revisar y registrar gaps; no simular cumplimiento ni reescribir historial.
 - Ajuste operativo (2026-11-07): SUBFASES.md ahora asigna skills y prompts indispensables por ID; PROMPT_CURSOR.md exige leerlos antes de ejecutar, también al reanudar. Esto actualiza el procedimiento futuro, no modifica estados ni evidencias de subfases ya verificadas.
 - Revalidación F0.1 (2026-11-07): se conservó la evidencia histórica y se añadió el perfil local macOS a `docs/DECISIONES.md`. Node 22.23.4 cumple el rango del proyecto y las restricciones de Node consultadas; npm 10.9.9 y `package-lock.json` v3 identifican el gestor. El servidor PostgreSQL acepta conexiones, pero su versión no se verificó. El workspace actual no tiene `.git`, discrepando con el resumen que declara F2.3 integrada; no reanudar fases hasta resolver procedencia. No se alteró el estado histórico de avance.
@@ -21,7 +22,7 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 | F1.2 | PostgreSQL en contenedor | VERIFICADA en la línea local (f431906; CI 42408841230) |
 | F1.3 | Integración y cierre | VERIFICADA; F1 CERRADA en la línea local (dev@964ec3d) |
 | F2.1 | Módulos y persistencia | VERIFICADA en `change/f2.1-modules-persistence` (CI 42424991919); sin merge |
-| F2.2 | Migraciones y arnés DB | EN CURSO en `change/f2.2-migrations-db-harness` (basada en F2.1) |
+| F2.2 | Migraciones y arnés DB | VERIFICADA en `change/f2.2-migrations-db-harness` (CI 42433897297); sin merge |
 | F2.3 | Integración y cierre | PENDIENTE en la línea local (solo evidencia histórica de otro workspace) |
 | F3.0 | Infraestructura base de audit trail | PENDIENTE |
 | F3.1 | Catálogo y wrapper | PENDIENTE |
@@ -202,6 +203,14 @@ Conservar y reconciliar evidencias anteriores. Los estados de otros workspaces n
 - Puerta arquitectónica: criterios 1–2 NO APLICA (sin Vue). Criterios 3–5 CUMPLE en los contratos/base implementados; sin handlers/casos de uso adelantados. Criterio 6 CUMPLE (unitarias locales e integración PostgreSQL en CI). Criterio 7 CUMPLE en configuración: pool acotado y estado de solicitud no global.
 - Commits: `2654c98` (implementación), `731cd5c` (evidencia/bloqueo inicial) y `6ba4146` (corrección de aserción de metadata y tablas de unión). La rama publicada recibió autorización explícita para ejecutar CI.
 - Estado/siguiente paso: F2.1 VERIFICADA. Sin merge; integrar junto con las ramas F2.2 en F2.3. Árbol limpio comprobado en `6ba4146`.
+
+## Adopción local de F2.2 — 2026-11-08
+- ID / estado: F2.2 / VERIFICADA en `change/f2.2-migrations-db-harness`; basada en la F2.1 verificada. Sin PR ni merge; la integración queda para F2.3.
+- Entregables: migración inicial reversible y compartida por CLI/runtime; schemas alineados con claves primarias, índices, valores UUID y acciones FK; guardas estrictas para reset de la base `TEST_DB_*`; pruebas PostgreSQL de ciclo de migración, constraints y rollback transaccional entre repositorios; configuración CI/Compose; documentación de comandos y opt-in destructivo.
+- Verificaciones locales: `npm run lint`, `npm run typecheck`, `npm run test:unit` (14/14) y `npm run build` pasan. `docker compose --env-file .env.example config --quiet` pasa con valores ficticios para interpolación. No hay configuración PostgreSQL local; la descarga de la imagen `postgres:17-alpine` tardó más de cinco minutos y se canceló; no quedó contenedor de prueba. PostgreSQL se validó en CI.
+- CI remota: los runs 42428441035 y 42433405391 detectaron deriva entre migración y metadata; se corrigieron nombres de PK/índices, estrategia UUID y acciones `ON UPDATE`. Run 42433897297 (commit `4eb7e25`) terminó SUCCESS en los tres jobs: calidad/typecheck/unit/build; PostgreSQL con 3 archivos de integración aprobados; Docker/Compose con integración y smoke test.
+- Revisión de seguridad obligatoria del delta F2.2: sin vulnerabilidades encontradas.
+- Estado/siguiente paso: F2.2 VERIFICADA. Mantener ramas F2.1/F2.2 sin merge y continuar con F2.3.
 
 ## Evidencias F2.2
 - ID / fecha real / estado: F2.2 / 2026-10-29 / VERIFICADA.

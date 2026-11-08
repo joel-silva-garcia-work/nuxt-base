@@ -114,3 +114,9 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - La base `TEST_DB_*` es el único destino de reset en integración. Antes de ejecutar la suite que revierte esquema se exige opt-in `TEST_DB_ALLOW_SCHEMA_RESET=true`, nombre `*_test`, base y rol distintos de desarrollo, conexión efectiva al nombre/rol configurados y rol no superusuario. Se rechazan tablas públicas no administradas y migraciones desconocidas; no se usa `NODE_ENV=test` como salvaguarda.
 - La migración crea las tablas de users, roles, permissions, asociaciones, sesiones, rate limit y audit; añade FK/índices/checks, unicidad de email activo normalizado y las reglas de borrado de relaciones. Las pruebas aplican, revierten y reaplican, comprueban restricciones, y fuerzan rollback de repositorios de users/roles/permissions mediante el mismo `Tx`.
 - En `.env.example` la autorización de reset queda desactivada. CI la activa solo para su base de pruebas descartable; la instrucción local advierte que habilitarla en un `*_test` reinicia las tablas gestionadas por la migración.
+
+### Adopción local F2.2 — 2026-11-08
+
+- La rama `change/f2.2-migrations-db-harness`, basada en F2.1, quedó VERIFICADA en CI run 42433897297: calidad/build, integración PostgreSQL y Docker/Compose aprobados. Se corrigió deriva de metadata en PK, índices, generación UUID y acciones FK `ON UPDATE`; la prueba de integración verifica que TypeORM no proponga cambios sobre el esquema migrado.
+- Guardas de reset verificadas contra una base de pruebas aislada y rol no superusuario; integración confirma aplicar/revertir/reaplicar, constraints y rollback compartido. La revisión de seguridad no encontró vulnerabilidades.
+- Sin PR ni merge. Integrar junto con F2.1 durante F2.3, una vez verificadas las unidades requeridas.

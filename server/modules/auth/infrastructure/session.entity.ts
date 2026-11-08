@@ -14,7 +14,12 @@ export const SessionEntitySchema = new EntitySchema<SessionEntity>({
   name: 'Session',
   tableName: 'sessions',
   columns: {
-    id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
+    id: {
+      type: 'uuid',
+      primary: true,
+      primaryKeyConstraintName: 'pk_sessions',
+      default: () => 'gen_random_uuid()',
+    },
     userId: { name: 'user_id', type: 'uuid' },
     tokenHash: { name: 'token_hash', type: 'varchar', length: 128, select: false },
     expiresAt: { name: 'expires_at', type: 'timestamptz' },

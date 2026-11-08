@@ -64,31 +64,29 @@ export class InitialSchema1794152400000 implements MigrationInterface {
       CREATE TABLE "user_roles" (
         "user_id" uuid NOT NULL,
         "role_id" uuid NOT NULL,
-        CONSTRAINT "pk_user_roles" PRIMARY KEY ("user_id", "role_id"),
+        CONSTRAINT "PK_23ed6f04fe43066df08379fd034" PRIMARY KEY ("user_id", "role_id"),
         CONSTRAINT "fk_user_roles_user" FOREIGN KEY ("user_id")
           REFERENCES "users" ("id") ON DELETE CASCADE,
         CONSTRAINT "fk_user_roles_role" FOREIGN KEY ("role_id")
           REFERENCES "roles" ("id") ON DELETE CASCADE
       )
     `)
-    await queryRunner.query(`
-      CREATE INDEX "idx_user_roles_role_id" ON "user_roles" ("role_id")
-    `)
+    await queryRunner.query(`CREATE INDEX "IDX_87b8888186ca9769c960e92687" ON "user_roles" ("user_id")`)
+    await queryRunner.query(`CREATE INDEX "IDX_b23c65e50a758245a33ee35fda" ON "user_roles" ("role_id")`)
 
     await queryRunner.query(`
       CREATE TABLE "role_permissions" (
         "role_id" uuid NOT NULL,
         "permission_id" uuid NOT NULL,
-        CONSTRAINT "pk_role_permissions" PRIMARY KEY ("role_id", "permission_id"),
+        CONSTRAINT "PK_25d24010f53bb80b78e412c9656" PRIMARY KEY ("role_id", "permission_id"),
         CONSTRAINT "fk_role_permissions_role" FOREIGN KEY ("role_id")
           REFERENCES "roles" ("id") ON DELETE CASCADE,
         CONSTRAINT "fk_role_permissions_permission" FOREIGN KEY ("permission_id")
           REFERENCES "permissions" ("id") ON DELETE RESTRICT
       )
     `)
-    await queryRunner.query(`
-      CREATE INDEX "idx_role_permissions_permission_id" ON "role_permissions" ("permission_id")
-    `)
+    await queryRunner.query(`CREATE INDEX "IDX_178199805b901ccd220ab7740e" ON "role_permissions" ("role_id")`)
+    await queryRunner.query(`CREATE INDEX "IDX_17022daf3f885f7d35423e9971" ON "role_permissions" ("permission_id")`)
 
     await queryRunner.query(`
       CREATE TABLE "sessions" (

@@ -16,7 +16,12 @@ export const UserEntitySchema = new EntitySchema<UserEntity>({
   name: 'User',
   tableName: 'users',
   columns: {
-    id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
+    id: {
+      type: 'uuid',
+      primary: true,
+      primaryKeyConstraintName: 'pk_users',
+      default: () => 'gen_random_uuid()',
+    },
     email: { type: 'varchar', length: 320 },
     name: { type: 'varchar', length: 160 },
     passwordHash: { name: 'password_hash', type: 'varchar', length: 255, select: false },

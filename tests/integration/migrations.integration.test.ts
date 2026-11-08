@@ -108,7 +108,10 @@ describe('initial PostgreSQL migration', () => {
 
   it('keeps the migration schema aligned with TypeORM metadata', async () => {
     const schemaDiff = await dataSource.driver.createSchemaBuilder().log()
-    expect(schemaDiff.upQueries).toEqual([])
+    expect(
+      schemaDiff.upQueries.map(({ query }) => query),
+      'The migration must create a schema that matches TypeORM metadata',
+    ).toEqual([])
   })
 
   it('enforces normalized reusable emails, unique keys, and relation foreign keys', async () => {

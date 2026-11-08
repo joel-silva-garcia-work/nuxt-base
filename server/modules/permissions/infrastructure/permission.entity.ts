@@ -18,7 +18,12 @@ export const PermissionEntitySchema = new EntitySchema<PermissionEntity>({
   name: 'Permission',
   tableName: 'permissions',
   columns: {
-    id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
+    id: {
+      type: 'uuid',
+      primary: true,
+      primaryKeyConstraintName: 'pk_permissions',
+      default: () => 'gen_random_uuid()',
+    },
     key: { type: 'varchar', length: 120 },
     method: { type: 'varchar', length: 10 },
     routePattern: { name: 'route_pattern', type: 'varchar', length: 255 },
@@ -45,6 +50,7 @@ export const PermissionEntitySchema = new EntitySchema<PermissionEntity>({
       type: 'many-to-many',
       target: 'Role',
       inverseSide: 'permissions',
+      onDelete: 'RESTRICT',
     },
   },
 })

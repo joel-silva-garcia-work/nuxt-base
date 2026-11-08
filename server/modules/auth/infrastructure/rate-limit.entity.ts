@@ -11,8 +11,18 @@ export const RateLimitBucketEntitySchema = new EntitySchema<RateLimitBucketEntit
   name: 'RateLimitBucket',
   tableName: 'rate_limit_buckets',
   columns: {
-    key: { type: 'varchar', length: 160, primary: true },
-    windowStartedAt: { name: 'window_started_at', type: 'timestamptz', primary: true },
+    key: {
+      type: 'varchar',
+      length: 160,
+      primary: true,
+      primaryKeyConstraintName: 'pk_rate_limit_buckets',
+    },
+    windowStartedAt: {
+      name: 'window_started_at',
+      type: 'timestamptz',
+      primary: true,
+      primaryKeyConstraintName: 'pk_rate_limit_buckets',
+    },
     requestCount: { name: 'request_count', type: 'integer', default: 0 },
     updatedAt: { name: 'updated_at', type: 'timestamptz', updateDate: true },
   },

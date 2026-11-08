@@ -15,7 +15,12 @@ export const RoleEntitySchema = new EntitySchema<RoleEntity>({
   name: 'Role',
   tableName: 'roles',
   columns: {
-    id: { type: 'uuid', primary: true, default: () => 'gen_random_uuid()' },
+    id: {
+      type: 'uuid',
+      primary: true,
+      primaryKeyConstraintName: 'pk_roles',
+      default: () => 'gen_random_uuid()',
+    },
     name: { type: 'varchar', length: 100 },
     description: { type: 'varchar', length: 500, nullable: true },
     isSystem: { name: 'is_system', type: 'boolean', default: false },

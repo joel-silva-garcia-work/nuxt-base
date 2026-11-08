@@ -6,6 +6,7 @@ import { PermissionEntitySchema } from '../../server/modules/permissions/infrast
 import { RoleEntitySchema } from '../../server/modules/roles/infrastructure/role.entity.ts'
 import { SessionEntitySchema } from '../../server/modules/auth/infrastructure/session.entity.ts'
 import { UserEntitySchema } from '../../server/modules/users/infrastructure/user.entity.ts'
+import { AuditEntryEntitySchema } from '../../server/modules/audit/infrastructure/audit-entry.entity.ts'
 
 describe('persistence foundations', () => {
   it('registers each persistence entity once', () => {
@@ -19,6 +20,10 @@ describe('persistence foundations', () => {
     expect(RoleEntitySchema.options.relations?.permissions?.joinTable).toMatchObject({
       name: 'role_permissions',
     })
+    expect(AuditEntryEntitySchema.options.indices).toContainEqual(expect.objectContaining({
+      name: 'idx_audit_entries_request_id',
+      columns: ['requestId'],
+    }))
     expect(PermissionEntitySchema.options.indices).toContainEqual(expect.objectContaining({
       name: 'uq_permissions_method_route',
       unique: true,

@@ -2,6 +2,7 @@ import { parseDatabaseConfig } from '../platform/config/database.ts'
 import { createPostgresDataSource } from '../platform/db/data-source.ts'
 import type { DataSource } from 'typeorm'
 import { InitialSchema1794152400000 } from '../migrations/1794152400000-InitialSchema.ts'
+import { AuditTrailRequestIndex1794163200000 } from '../migrations/1794163200000-AuditTrailRequestIndex.ts'
 import { AuditEntryEntitySchema } from '../modules/audit/infrastructure/audit-entry.entity.ts'
 import { RateLimitBucketEntitySchema } from '../modules/auth/infrastructure/rate-limit.entity.ts'
 import { SessionEntitySchema } from '../modules/auth/infrastructure/session.entity.ts'
@@ -18,7 +19,10 @@ export const persistenceEntities = [
   AuditEntryEntitySchema,
 ]
 
-export const persistenceMigrations = [InitialSchema1794152400000]
+export const persistenceMigrations = [
+  InitialSchema1794152400000,
+  AuditTrailRequestIndex1794163200000,
+]
 
 export type DatabaseTarget = 'development' | 'test'
 

@@ -1,4 +1,5 @@
 import { EntitySchema } from 'typeorm'
+import type { AuditJsonValue } from '../domain/audit-entry.ts'
 
 export interface AuditEntryEntity {
   id: string
@@ -12,8 +13,8 @@ export interface AuditEntryEntity {
   action: string
   entity: string
   entityId: string | null
-  previousState: Record<string, unknown>
-  currentState: Record<string, unknown>
+  previousState: Record<string, AuditJsonValue>
+  currentState: Record<string, AuditJsonValue>
   createdAt: Date
 }
 
@@ -44,6 +45,7 @@ export const AuditEntryEntitySchema = new EntitySchema<AuditEntryEntity>({
   indices: [
     { name: 'idx_audit_entries_created_at', columns: ['createdAt'] },
     { name: 'idx_audit_entries_entity', columns: ['entity', 'entityId'] },
+    { name: 'idx_audit_entries_request_id', columns: ['requestId'] },
   ],
   checks: [
     {

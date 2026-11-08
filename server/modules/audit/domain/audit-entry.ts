@@ -1,3 +1,13 @@
+export type AuditJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | AuditJsonValue[]
+  | { [key: string]: AuditJsonValue }
+
+export type AuditJsonObject = Readonly<Record<string, AuditJsonValue>>
+
 export interface AuditEntry {
   readonly id: string
   readonly actorId: string | null
@@ -10,7 +20,7 @@ export interface AuditEntry {
   readonly action: string
   readonly entity: string
   readonly entityId: string | null
-  readonly previousState: Readonly<Record<string, unknown>>
-  readonly currentState: Readonly<Record<string, unknown>>
+  readonly previousState: AuditJsonObject
+  readonly currentState: AuditJsonObject
   readonly createdAt: Date
 }

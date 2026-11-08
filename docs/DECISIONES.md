@@ -127,3 +127,11 @@ Durante esa integración no había PR en GitHub, la herramienta disponible era d
 - La revisión técnica encontró y corrigió el ciclo de vida obsoleto del singleton DataSource y la búsqueda por email normalizado/borrado lógico. Fix probado en CI run 42438506400. Revisión de seguridad sin hallazgos.
 - Checks locales post-merge en `dev`: lint, typecheck, 15 unitarias, build, Compose config y diff check aprobados. CI post-merge run 42439071311 aprobó los tres jobs: calidad/build, PostgreSQL integration, Docker/Compose.
 - F2.1 y F2.2 quedaron verificadas en la ancestría de `dev`; F2.3 VERIFICADA y F2 CERRADA. No se borraron ramas.
+
+## F3.0 — Infraestructura base de audit trail — VERIFICADA en rama
+
+- Se confirmó que F2.2 ya crea `audit_entries` con metadatos, estados JSONB separados y `created_at DEFAULT now()`. No se modifica la migración histórica; F3.0 añade una migración reversible con índice por `request_id`.
+- `RecordAuditChange` recibe actor y contexto explícitos, limita el registro a mutaciones 2xx, elimina query/fragmento de la ruta y genera diferencias planas por columna. Los campos sensibles se excluyen incluso dentro de objetos/arrays; cambios exclusivamente sensibles generan evento sin valores y un no-op no genera fila.
+- La resolución de IP usa el peer de conexión como fuente predeterminada; considera `X-Forwarded-For` solo cuando el peer coincide con una dirección exacta en la allowlist confiable, y descarta cadenas inválidas.
+- `TypeOrmAuditWriter` escribe con el manager de la transacción, reintenta como máximo tres veces adicionales solo para `40001`, `40P01` o `55P03`, y marca rollback-only ante fallo de auditoría para impedir commits si el error se captura aguas arriba.
+- Verificación: lint, typecheck, unitarias (21), build, Compose config y diff check aprobados; integración PostgreSQL real (3 archivos, 11 pruebas) pasó en contenedor temporal aislado con rol no superusuario. Revisión de seguridad sin hallazgos. No se publicó ni integró la rama; F3.0 queda lista en su rama y se detiene antes de F3.1.

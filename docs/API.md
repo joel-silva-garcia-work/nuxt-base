@@ -100,6 +100,8 @@ Verificador futuro (F3.1): comparar en ambas direcciones rutas descubiertas y ca
 - Excluir credenciales, hashes, tokens, cookies y secretos. Reintentar hasta tres veces adicionales solo ante error de escritura transitorio recuperable mediante savepoint; si falla, rollback. Errores permanentes/transaccionales revierten sin reintento.
 - F3.0 implementa servicio base antes de las primeras mutaciones; F4.0 define retención/archivo; F4.5 prueba la cobertura integral. Destino y plazos de retención deben aprobarse antes de F4.0.
 
+La implementación base `RecordAuditChange` valida actor, método/código exitoso, identificadores y ruta local; descarta query/fragmento y filtra claves sensibles recursivamente. Un cambio real limitado a campos sensibles conserva el evento con snapshots vacíos, distinto de un no-op. `TypeOrmAuditWriter` exige el `Tx` activo, escribe con parámetros en PostgreSQL y limita reintentos a SQLSTATE `40001`, `40P01` y `55P03`; si el guardado falla, marca la transacción completa para rollback aunque el llamador capture el error. La IP usa el peer de conexión y solo interpreta `X-Forwarded-For` cuando el peer inmediato coincide con una dirección de proxy explícitamente confiable; una cadena inválida se descarta.
+
 ## 7. Vue, SSR y contratos reutilizables
 
 - `app/components/base/*`: presentación genérica; props y emits tipados, slots justificados, accesibilidad y estados visuales; no conoce endpoints, entidades, permisos ni router.
@@ -123,6 +125,7 @@ Verificador futuro (F3.1): comparar en ambas direcciones rutas descubiertas y ca
 - `UserRecord` nunca contiene `passwordHash`; la entidad lo excluye de las consultas predeterminadas. El hash de sesión también se excluye por defecto y permanece en el adaptador de auth.
 - Registrar metadata no crea tablas: `synchronize` y `migrationsRun` permanecen desactivados. La creación y reversión del esquema se entrega en F2.2.
 - F2.2 registra la migración inicial en la raíz de composición y en el DataSource CLI. El arnés aplica/revierte/reaplica tablas por migración; no elimina esquemas completos ni ejecuta limpieza implícita al iniciar.
+- `audit_entries` ya existe desde F2.2 con sus columnas JSONB separadas y fecha `timestamptz` generada por PostgreSQL. F3.0 la conserva y agrega, mediante migración aditiva, un índice por `request_id` para consultas de correlación; no duplica ni recrea la tabla.
 - La suite de integración destructiva exige `TEST_DB_ALLOW_SCHEMA_RESET=true`, una base llamada `*_test` separada de `DB_NAME`, el rol `TEST_DB_USER` separado y no superusuario, y coincidencia de `current_database()`/`current_user` con configuración. Antes de revertir comprueba que las tablas públicas pertenezcan al esquema administrado; `NODE_ENV=test` por sí solo no habilita reset.
 - La unicidad de email aplica solo a usuarios no borrados lógicamente y el esquema rechaza emails no normalizados; la búsqueda por email normaliza a minúsculas y excluye usuarios borrados. Permisos preservan unicidad de clave y método+ruta. Las FK limpian relaciones al borrar usuarios/roles y restringen borrar permisos asignados.
 

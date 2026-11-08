@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { PostgresTransactionRunner, getEntityManager } from '../../server/platform/db/transaction.ts'
-import { getDataSource } from '../../server/composition/persistence.ts'
-import { InitialSchema1794152400000 } from '../../server/migrations/1794152400000-InitialSchema.ts'
+import { getDataSource, persistenceMigrations } from '../../server/composition/persistence.ts'
+import { RecordAuditChange, type AuditChange } from '../../server/modules/audit/index.ts'
+import { TypeOrmAuditWriter } from '../../server/modules/audit/infrastructure/typeorm-audit.writer.ts'
+import { resolveTrustedClientIpAddress } from '../../server/modules/audit/domain/trusted-client-ip.ts'
 import { TypeOrmPermissionRepository } from '../../server/modules/permissions/infrastructure/typeorm-permission.repository.ts'
 import { PermissionEntitySchema } from '../../server/modules/permissions/infrastructure/permission.entity.ts'
 import { TypeOrmRoleRepository } from '../../server/modules/roles/infrastructure/typeorm-role.repository.ts'
@@ -15,6 +17,7 @@ import {
 } from './support/test-database.ts'
 
 const dataSource = getDataSource('test')
+const expectedMigrationNames = new Set(persistenceMigrations.map(migration => migration.name))
 const applicationTables = new Set([
   'audit_entries',
   'permissions',
@@ -52,7 +55,7 @@ async function expectSqlState(
   }
 }
 
-describe('initial PostgreSQL migration', () => {
+describe('PostgreSQL migrations and audit trail', () => {
   beforeAll(async () => {
     assertTestDatabaseResetAllowed()
     await dataSource.initialize()
@@ -66,10 +69,10 @@ describe('initial PostgreSQL migration', () => {
 
     if (tables.includes('migrations')) {
       const applied: Array<{ name: string }> = await dataSource.query('SELECT name FROM "migrations"')
-      if (applied.some(migration => migration.name !== InitialSchema1794152400000.name)) {
+      if (applied.some(migration => !expectedMigrationNames.has(migration.name))) {
         throw new Error('Refusing to reset a test database containing unrecognized migrations')
       }
-      if (applied.length > 0) {
+      for (let index = 0; index < applied.length; index += 1) {
         await dataSource.undoLastMigration()
       }
     } else if (tables.some(table => applicationTables.has(table))) {
@@ -83,8 +86,8 @@ describe('initial PostgreSQL migration', () => {
     }
   })
 
-  it('applies, reverts, and reapplies the schema migration', async () => {
-    expect(await dataSource.runMigrations()).toHaveLength(1)
+  it('applies and reverts the schema and audit request index migrations', async () => {
+    expect(await dataSource.runMigrations()).toHaveLength(2)
     expect(await dataSource.showMigrations()).toBe(false)
     expect(await publicTables()).toEqual([
       'audit_entries',
@@ -98,8 +101,19 @@ describe('initial PostgreSQL migration', () => {
       'users',
     ])
 
+    const auditIndexes: Array<{ indexname: string }> = await dataSource.query(`
+      SELECT indexname
+      FROM pg_indexes
+      WHERE schemaname = 'public' AND tablename = 'audit_entries'
+    `)
+    expect(auditIndexes.map(({ indexname }) => indexname)).toContain('idx_audit_entries_request_id')
+
     await dataSource.undoLastMigration()
-    expect(await publicTables()).toEqual(['migrations'])
+    expect(await publicTables()).toContain('audit_entries')
+    expect(await dataSource.query(`
+      SELECT indexname FROM pg_indexes
+      WHERE schemaname = 'public' AND indexname = 'idx_audit_entries_request_id'
+    `)).toEqual([])
 
     expect(await dataSource.runMigrations()).toHaveLength(1)
     expect(await dataSource.runMigrations()).toHaveLength(0)
@@ -153,6 +167,140 @@ describe('initial PostgreSQL migration', () => {
       await expect(users.findByNormalizedEmail(tx, deletedOnlyEmail)).resolves.toBeNull()
     })
   })
+
+  it('persists sanitized audit state in the business transaction and rolls both back together', async () => {
+    const requestId = `audit-rollback-${randomUUID()}`
+    const roleId = randomUUID()
+    const change = createAuditChange(requestId)
+    const runner = new PostgresTransactionRunner(dataSource)
+    const recorder = new RecordAuditChange(new TypeOrmAuditWriter())
+    const failure = new Error('rollback business write and audit entry')
+
+    await expect(runner.run(async (tx) => {
+      const manager = getEntityManager(tx)
+      await manager.insert(RoleEntitySchema, { id: roleId, name: `audit-${roleId}` })
+      await expect(recorder.record(tx, change)).resolves.toBe(true)
+      const rows: Array<{
+        actor_type: string
+        ip_address: string
+        url: string
+        previous_state: Record<string, unknown>
+        current_state: Record<string, unknown>
+        created_at: Date
+      }> = await manager.query(`
+        SELECT actor_type, ip_address, url, previous_state, current_state, created_at
+        FROM audit_entries WHERE request_id = $1
+      `, [requestId])
+
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toMatchObject({
+        actor_type: 'SYSTEM',
+        ip_address: '192.0.2.10',
+        url: '/api/users/1',
+        previous_state: { name: 'Before' },
+        current_state: { name: 'After' },
+      })
+      expect(rows[0]?.created_at).toBeInstanceOf(Date)
+      expect(JSON.stringify(rows[0])).not.toContain('passwordHash')
+      throw failure
+    })).rejects.toBe(failure)
+
+    await expect(dataSource.query('SELECT id FROM roles WHERE id = $1', [roleId])).resolves.toEqual([])
+    await expect(dataSource.query(
+      'SELECT id FROM audit_entries WHERE request_id = $1',
+      [requestId],
+    )).resolves.toEqual([])
+  })
+
+  it('retries only recoverable audit write errors up to three times and rolls back on exhaustion', async () => {
+    const requestId = `audit-retry-${randomUUID()}`
+    const failedRequestId = `audit-retry-exhausted-${randomUUID()}`
+    const roleId = randomUUID()
+    const runner = new PostgresTransactionRunner(dataSource)
+    const recorder = new RecordAuditChange(new TypeOrmAuditWriter())
+    const sequenceName = 'audit_test_retry_sequence'
+    const functionName = 'audit_test_retry_once'
+    const triggerName = 'audit_test_retry_trigger'
+
+    try {
+      await dataSource.query(`CREATE SEQUENCE "${sequenceName}"`)
+      await dataSource.query(`
+        CREATE FUNCTION "${functionName}"() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+          IF nextval('${sequenceName}') = 1 THEN
+            RAISE EXCEPTION 'transient audit failure' USING ERRCODE = '40001';
+          END IF;
+          RETURN NEW;
+        END
+        $$
+      `)
+      await dataSource.query(`
+        CREATE TRIGGER "${triggerName}" BEFORE INSERT ON audit_entries
+        FOR EACH ROW EXECUTE FUNCTION "${functionName}"()
+      `)
+
+      await expect(runner.run(tx => recorder.record(tx, createAuditChange(requestId))))
+        .resolves.toBe(true)
+      const successfulAttempts: Array<{ last_value: string }> = await dataSource.query(
+        `SELECT last_value::text FROM "${sequenceName}"`,
+      )
+      expect(successfulAttempts[0]?.last_value).toBe('2')
+
+      await dataSource.query(`
+        CREATE OR REPLACE FUNCTION "${functionName}"() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+          PERFORM nextval('${sequenceName}');
+          RAISE EXCEPTION 'transient audit failure' USING ERRCODE = '40001';
+        END
+        $$
+      `)
+      await dataSource.query(`ALTER SEQUENCE "${sequenceName}" RESTART WITH 1`)
+
+      let auditFailure: unknown
+      await expect(runner.run(async (tx) => {
+        await getEntityManager(tx).insert(RoleEntitySchema, {
+          id: roleId,
+          name: `audit-retry-${roleId}`,
+        })
+        try {
+          await recorder.record(tx, createAuditChange(failedRequestId))
+        } catch (error) {
+          auditFailure = error
+        }
+      })).rejects.toThrow('marked for rollback')
+      expect(auditFailure).toMatchObject({ code: '40001' })
+
+      const exhaustedAttempts: Array<{ last_value: string }> = await dataSource.query(
+        `SELECT last_value::text FROM "${sequenceName}"`,
+      )
+      expect(exhaustedAttempts[0]?.last_value).toBe('4')
+      await expect(dataSource.query('SELECT id FROM roles WHERE id = $1', [roleId])).resolves.toEqual([])
+      await expect(dataSource.query(
+        'SELECT id FROM audit_entries WHERE request_id = $1',
+        [failedRequestId],
+      )).resolves.toEqual([])
+    } finally {
+      await dataSource.query(`DROP TRIGGER IF EXISTS "${triggerName}" ON audit_entries`)
+      await dataSource.query(`DROP FUNCTION IF EXISTS "${functionName}"()`)
+      await dataSource.query(`DROP SEQUENCE IF EXISTS "${sequenceName}"`)
+    }
+  })
+
+  function createAuditChange(requestId: string): AuditChange {
+    return {
+      actor: { type: 'SYSTEM' },
+      ipAddress: resolveTrustedClientIpAddress('192.0.2.10', null),
+      url: '/api/users/1?password=not-logged#profile',
+      method: 'PATCH',
+      statusCode: 200,
+      requestId,
+      action: 'users.update',
+      entity: 'user',
+      entityId: '1',
+      previous: { name: 'Before', passwordHash: 'not-logged' },
+      current: { name: 'After', passwordHash: 'also-not-logged' },
+    }
+  }
 
   it('enforces normalized reusable emails, unique keys, and relation foreign keys', async () => {
     const queryRunner = dataSource.createQueryRunner()

@@ -66,9 +66,9 @@ export class InitialSchema1794152400000 implements MigrationInterface {
         "role_id" uuid NOT NULL,
         CONSTRAINT "PK_23ed6f04fe43066df08379fd034" PRIMARY KEY ("user_id", "role_id"),
         CONSTRAINT "fk_user_roles_user" FOREIGN KEY ("user_id")
-          REFERENCES "users" ("id") ON DELETE CASCADE,
+          REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         CONSTRAINT "fk_user_roles_role" FOREIGN KEY ("role_id")
-          REFERENCES "roles" ("id") ON DELETE CASCADE
+          REFERENCES "roles" ("id") ON DELETE CASCADE ON UPDATE CASCADE
       )
     `)
     await queryRunner.query(`CREATE INDEX "IDX_87b8888186ca9769c960e92687" ON "user_roles" ("user_id")`)
@@ -80,9 +80,9 @@ export class InitialSchema1794152400000 implements MigrationInterface {
         "permission_id" uuid NOT NULL,
         CONSTRAINT "PK_25d24010f53bb80b78e412c9656" PRIMARY KEY ("role_id", "permission_id"),
         CONSTRAINT "fk_role_permissions_role" FOREIGN KEY ("role_id")
-          REFERENCES "roles" ("id") ON DELETE CASCADE,
+          REFERENCES "roles" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
         CONSTRAINT "fk_role_permissions_permission" FOREIGN KEY ("permission_id")
-          REFERENCES "permissions" ("id") ON DELETE RESTRICT
+          REFERENCES "permissions" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
       )
     `)
     await queryRunner.query(`CREATE INDEX "IDX_178199805b901ccd220ab7740e" ON "role_permissions" ("role_id")`)
@@ -98,7 +98,7 @@ export class InitialSchema1794152400000 implements MigrationInterface {
         "created_at" timestamptz NOT NULL DEFAULT now(),
         CONSTRAINT "pk_sessions" PRIMARY KEY ("id"),
         CONSTRAINT "fk_sessions_user" FOREIGN KEY ("user_id")
-          REFERENCES "users" ("id") ON DELETE CASCADE
+          REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE NO ACTION
       )
     `)
     await queryRunner.query(`CREATE UNIQUE INDEX "uq_sessions_token_hash" ON "sessions" ("token_hash")`)

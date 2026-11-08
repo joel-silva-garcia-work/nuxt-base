@@ -22,7 +22,7 @@ export const PermissionEntitySchema = new EntitySchema<PermissionEntity>({
       type: 'uuid',
       primary: true,
       primaryKeyConstraintName: 'pk_permissions',
-      default: () => 'gen_random_uuid()',
+      generated: 'uuid',
     },
     key: { type: 'varchar', length: 120 },
     method: { type: 'varchar', length: 10 },
@@ -51,6 +51,7 @@ export const PermissionEntitySchema = new EntitySchema<PermissionEntity>({
       target: 'Role',
       inverseSide: 'permissions',
       onDelete: 'RESTRICT',
+      onUpdate: 'CASCADE',
     },
   },
 })

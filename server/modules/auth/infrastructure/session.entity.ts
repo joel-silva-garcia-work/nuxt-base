@@ -18,7 +18,7 @@ export const SessionEntitySchema = new EntitySchema<SessionEntity>({
       type: 'uuid',
       primary: true,
       primaryKeyConstraintName: 'pk_sessions',
-      default: () => 'gen_random_uuid()',
+      generated: 'uuid',
     },
     userId: { name: 'user_id', type: 'uuid' },
     tokenHash: { name: 'token_hash', type: 'varchar', length: 128, select: false },
@@ -37,6 +37,7 @@ export const SessionEntitySchema = new EntitySchema<SessionEntity>({
       target: 'User',
       joinColumn: { name: 'user_id', referencedColumnName: 'id', foreignKeyConstraintName: 'fk_sessions_user' },
       onDelete: 'CASCADE',
+      onUpdate: 'NO ACTION',
     },
   },
 })

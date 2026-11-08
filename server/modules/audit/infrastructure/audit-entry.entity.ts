@@ -25,7 +25,7 @@ export const AuditEntryEntitySchema = new EntitySchema<AuditEntryEntity>({
       type: 'uuid',
       primary: true,
       primaryKeyConstraintName: 'pk_audit_entries',
-      default: () => 'gen_random_uuid()',
+      generated: 'uuid',
     },
     actorId: { name: 'actor_id', type: 'uuid', nullable: true },
     actorType: { name: 'actor_type', type: 'varchar', length: 10 },

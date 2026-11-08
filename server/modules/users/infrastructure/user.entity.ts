@@ -20,7 +20,7 @@ export const UserEntitySchema = new EntitySchema<UserEntity>({
       type: 'uuid',
       primary: true,
       primaryKeyConstraintName: 'pk_users',
-      default: () => 'gen_random_uuid()',
+      generated: 'uuid',
     },
     email: { type: 'varchar', length: 320 },
     name: { type: 'varchar', length: 160 },
@@ -35,6 +35,7 @@ export const UserEntitySchema = new EntitySchema<UserEntity>({
       type: 'many-to-many',
       target: 'Role',
       inverseSide: 'users',
+      onUpdate: 'CASCADE',
       joinTable: {
         name: 'user_roles',
         joinColumn: { name: 'user_id', referencedColumnName: 'id', foreignKeyConstraintName: 'fk_user_roles_user' },

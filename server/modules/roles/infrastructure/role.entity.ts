@@ -19,7 +19,7 @@ export const RoleEntitySchema = new EntitySchema<RoleEntity>({
       type: 'uuid',
       primary: true,
       primaryKeyConstraintName: 'pk_roles',
-      default: () => 'gen_random_uuid()',
+      generated: 'uuid',
     },
     name: { type: 'varchar', length: 100 },
     description: { type: 'varchar', length: 500, nullable: true },
@@ -32,11 +32,13 @@ export const RoleEntitySchema = new EntitySchema<RoleEntity>({
       type: 'many-to-many',
       target: 'User',
       inverseSide: 'roles',
+      onUpdate: 'CASCADE',
     },
     permissions: {
       type: 'many-to-many',
       target: 'Permission',
       inverseSide: 'roles',
+      onUpdate: 'CASCADE',
       joinTable: {
         name: 'role_permissions',
         joinColumn: { name: 'role_id', referencedColumnName: 'id', foreignKeyConstraintName: 'fk_role_permissions_role' },
